@@ -15,13 +15,16 @@ export default function LoginPage() {
 
   const valid = /^[6-9]\d{9}$/.test(mobile);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!valid) { setErr("Enter a valid 10-digit Indian mobile"); return; }
-    const u = loginUser(mobile);
-    toast.success("Logged in 🥗");
-    if (!u.name) navigate("/register");
-    else navigate((location.state as { from?: string })?.from || "/dashboard");
+    try {
+      await loginUser(mobile);
+      toast.success("Logged in 🥗");
+      navigate((location.state as { from?: string })?.from || "/dashboard");
+    } catch (err: any) {
+      setErr(err.message || "Failed to login");
+    }
   };
 
   return (

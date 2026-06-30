@@ -41,11 +41,11 @@ export default function SubscriptionBuilder() {
     setStep((s) => Math.min(STEPS.length - 1, s + 1));
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (!user || !selectedPlan) return;
     setSubmitting(true);
-    setTimeout(() => {
-      const sub = create({
+    try {
+      await create({
         userId: user.id,
         userMobile: user.mobile,
         userName: user.name || "Customer",
@@ -57,10 +57,13 @@ export default function SubscriptionBuilder() {
         address,
         startDate,
       });
-      setSubmitting(false);
-      setDone(sub.id);
+      setDone(crypto.randomUUID().slice(0, 8).toUpperCase());
       clearAll();
-    }, 700);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to submit subscription");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (done) {

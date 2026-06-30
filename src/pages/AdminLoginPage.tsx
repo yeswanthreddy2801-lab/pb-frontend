@@ -23,9 +23,10 @@ export default function AdminLoginPage() {
     setNeedsPwd(true);
   };
 
-  const onLogin = (e: React.FormEvent) => {
+  const onLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loginAdmin(mobile, password)) {
+    const success = await loginAdmin(mobile, password);
+    if (success) {
       toast.success("Welcome back, admin");
       navigate("/admin");
     } else {

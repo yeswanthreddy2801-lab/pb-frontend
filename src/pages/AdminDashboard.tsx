@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
@@ -16,9 +16,11 @@ const STATUS_TONE: Record<string, string> = {
 };
 
 export default function AdminDashboard() {
-  const subs = useSubscriptionStore((s) => s.subscriptions);
-  const approve = useSubscriptionStore((s) => s.approve);
-  const reject = useSubscriptionStore((s) => s.reject);
+  const { subscriptions: subs, fetchSubscriptions, approve, reject } = useSubscriptionStore();
+
+  useEffect(() => {
+    fetchSubscriptions();
+  }, [fetchSubscriptions]);
 
   const stats = useMemo(() => {
     const pending = subs.filter((s) => s.status === "pending").length;
@@ -34,9 +36,12 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-surface">
       <Navbar />
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="font-display text-3xl font-bold">Admin dashboard 🛡️</h1>
-          <Link to="/admin/orders"><Button variant="outline">View all orders →</Button></Link>
+          <div className="flex items-center gap-3">
+            <Link to="/admin/inventory"><Button variant="outline" className="border-brand-green text-brand-green hover:bg-brand-green/10">📦 Manage Inventory</Button></Link>
+            <Link to="/admin/orders"><Button variant="outline">View all orders →</Button></Link>
+          </div>
         </div>
 
         {/* stats */}

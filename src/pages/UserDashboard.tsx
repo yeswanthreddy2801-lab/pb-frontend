@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
@@ -24,10 +24,14 @@ const STATUS_META: Record<string, { label: string; tone: string; emoji: string }
 
 export default function UserDashboard() {
   const { user } = useAuth();
-  const subs = useSubscriptionStore((s) => s.subscriptions);
+  const { subscriptions: subs, fetchSubscriptions } = useSubscriptionStore();
   const mySubs = useMemo(() => subs.filter((s) => s.userId === user?.id), [subs, user]);
   const current = mySubs[0];
   const today = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
+
+  useEffect(() => {
+    fetchSubscriptions();
+  }, [fetchSubscriptions]);
 
   return (
     <div className="min-h-screen bg-surface">

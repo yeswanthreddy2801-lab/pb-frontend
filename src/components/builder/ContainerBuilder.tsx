@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
-import { FOOD_ITEMS } from "@/mock/data/foodItems.data";
+import { useInventoryStore } from "@/store/inventoryStore";
 import { useBuilderStore } from "@/store/builderStore";
 import type { FoodItem, PlanType } from "@/types/food.types";
 import { CategoryFilter } from "./CategoryFilter";
@@ -19,9 +19,16 @@ export function ContainerBuilder({ planType = "veg" }: Props) {
   const selectedItems = useBuilderStore((s) => s.selectedItems);
   const addItem = useBuilderStore((s) => s.addItem);
   const addFlying = useBuilderStore((s) => s.addFlying);
+  const inventoryItems = useInventoryStore((s) => s.items);
+  const fetchInventory = useInventoryStore((s) => s.fetchItems);
+
+  useEffect(() => {
+    fetchInventory();
+  }, [fetchInventory]);
 
   const items = useMemo(() => {
-    return FOOD_ITEMS.filter((it) => {
+    return inventoryItems.filter((it) => {
+      if (!it.isActive || !it.isAvailable) return false;
       if (planType === "veg" && it.planType === "nonveg") return false;
       if (planType === "nonveg") { /* allow both veg + nonveg */ }
       if (category !== "all" && it.category !== category) return false;

@@ -5,11 +5,11 @@ import type { ReactNode } from "react";
 
 import LandingPage from "@/pages/LandingPage";
 import LoginPage from "@/pages/LoginPage";
-import RegisterPage from "@/pages/RegisterPage";
 import UserDashboard from "@/pages/UserDashboard";
 import SubscriptionBuilder from "@/pages/SubscriptionBuilder";
 import AdminLoginPage from "@/pages/AdminLoginPage";
 import AdminDashboard from "@/pages/AdminDashboard";
+import AdminInventory from "@/pages/AdminInventory";
 
 function Protected({ children, admin = false }: { children: ReactNode; admin?: boolean }) {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -38,7 +38,6 @@ export function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
 
         <Route path="/dashboard" element={<Protected><UserDashboard /></Protected>} />
@@ -46,6 +45,7 @@ export function App() {
 
         <Route path="/admin" element={<Protected admin><AdminDashboard /></Protected>} />
         <Route path="/admin/orders" element={<Protected admin><AdminDashboard /></Protected>} />
+        <Route path="/admin/inventory" element={<Protected admin><AdminInventory /></Protected>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

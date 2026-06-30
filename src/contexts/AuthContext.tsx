@@ -1,18 +1,18 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { User } from "@/types/user.types";
+import { api } from "@/lib/api";
 
-const ADMIN_MOBILE = "9999999999";
-const ADMIN_PASSWORD = "admin123";
-const STORAGE_KEY = "proteinbox_user";
+const STORAGE_TOKEN_KEY = "proteinbox_token";
+const STORAGE_USER_KEY = "proteinbox_user";
 
 interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  loginUser: (mobile: string) => User;
-  registerUser: (data: Omit<User, "id" | "createdAt" | "isAdmin">) => User;
-  loginAdmin: (mobile: string, password: string) => boolean;
-  updateProfile: (data: Partial<User>) => void;
+  loginUser: (mobile: string) => Promise<User>;
+  registerUser: (data: Omit<User, "id" | "createdAt" | "isAdmin">) => Promise<User>;
+  loginAdmin: (mobile: string, password: string) => Promise<boolean>;
+  updateProfile: (data: Partial<User>) => Promise<void>;
   logout: () => void;
 }
 
@@ -20,74 +20,96 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try { setUser(JSON.parse(raw)); } catch { /* ignore */ }
-    }
+    const initAuth = async () => {
+      const token = localStorage.getItem(STORAGE_TOKEN_KEY);
+      if (token) {
+        try {
+          // Load cached user immediately to avoid flicker
+          const cached = localStorage.getItem(STORAGE_USER_KEY);
+          if (cached) setUser(JSON.parse(cached));
+          
+          // Verify with backend
+          const res = await api.get("/auth/me");
+          if (res.success && res.data) {
+            persistUser(res.data);
+          }
+        } catch (error) {
+          console.error("Auth verification failed", error);
+          logout();
+        }
+      }
+      setLoading(false);
+    };
+    initAuth();
   }, []);
 
-  const persist = (u: User | null) => {
+  const persistUser = (u: User | null) => {
     setUser(u);
-    if (u) localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
-    else localStorage.removeItem(STORAGE_KEY);
-  };
-
-  const loginUser = (mobile: string): User => {
-    const existingRaw = localStorage.getItem(`proteinbox_user_${mobile}`);
-    if (existingRaw) {
-      const existing = JSON.parse(existingRaw) as User;
-      persist(existing);
-      return existing;
+    if (u) {
+      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(u));
+    } else {
+      localStorage.removeItem(STORAGE_USER_KEY);
+      localStorage.removeItem(STORAGE_TOKEN_KEY);
     }
-    const fresh: User = {
-      id: crypto.randomUUID(),
-      mobile,
-      name: "",
-      createdAt: new Date().toISOString(),
-    };
-    persist(fresh);
-    return fresh;
   };
 
-  const registerUser = (data: Omit<User, "id" | "createdAt" | "isAdmin">): User => {
-    const u: User = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), ...data };
-    localStorage.setItem(`proteinbox_user_${u.mobile}`, JSON.stringify(u));
-    persist(u);
-    return u;
-  };
-
-  const loginAdmin = (mobile: string, password: string): boolean => {
-    if (mobile === ADMIN_MOBILE && password === ADMIN_PASSWORD) {
-      const adminUser: User = {
-        id: "admin",
-        mobile,
-        name: "Admin",
-        isAdmin: true,
-        createdAt: new Date().toISOString(),
-      };
-      persist(adminUser);
-      return true;
+  const loginUser = async (mobile: string): Promise<User> => {
+    const res = await api.post("/auth/login", { mobile });
+    if (res.success && res.data) {
+      localStorage.setItem(STORAGE_TOKEN_KEY, res.data.token);
+      persistUser(res.data.user);
+      return res.data.user;
     }
-    return false;
+    throw new Error(res.message || "Login failed");
   };
 
-  const updateProfile = (data: Partial<User>) => {
+  const registerUser = async (data: Omit<User, "id" | "createdAt" | "isAdmin">): Promise<User> => {
+    // Note: Registration might be merged with updateProfile in this backend flow, 
+    // but keeping it for context compat.
+    const res = await api.patch("/users/me", data);
+    if (res.success && res.data) {
+      persistUser(res.data);
+      return res.data;
+    }
+    throw new Error("Registration failed");
+  };
+
+  const loginAdmin = async (mobile: string, passwordPlain: string): Promise<boolean> => {
+    try {
+      const res = await api.post("/auth/admin/login", { mobile, password: passwordPlain });
+      if (res.success && res.data) {
+        localStorage.setItem(STORAGE_TOKEN_KEY, res.data.token);
+        persistUser(res.data.admin);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const updateProfile = async (data: Partial<User>) => {
     if (!user) return;
-    const merged = { ...user, ...data };
-    localStorage.setItem(`proteinbox_user_${merged.mobile}`, JSON.stringify(merged));
-    persist(merged);
+    const res = await api.patch("/users/me", data);
+    if (res.success && res.data) {
+      persistUser(res.data);
+    }
   };
 
-  const logout = () => persist(null);
+  const logout = () => {
+    api.post("/auth/logout").catch(() => {});
+    persistUser(null);
+  };
 
   return (
     <AuthContext.Provider
       value={{
         user,
         isAuthenticated: !!user,
-        isAdmin: !!user?.isAdmin,
+        isAdmin: !!user?.isAdmin || !!(user as any)?.role, // support role from admin
         loginUser,
         registerUser,
         loginAdmin,
@@ -95,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
       }}
     >
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 }
@@ -105,5 +127,3 @@ export function useAuth() {
   if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
   return ctx;
 }
-
-export const ADMIN_CREDENTIALS = { mobile: ADMIN_MOBILE, password: ADMIN_PASSWORD };
