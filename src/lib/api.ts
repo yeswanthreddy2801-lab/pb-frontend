@@ -33,7 +33,19 @@ api.interceptors.response.use(
     }
     
     // Throw the error message provided by our backend, or a generic one
-    const message = error.response?.data?.message || error.message || "An error occurred";
+    const backendError = error.response?.data?.error;
+    const details = error.response?.data?.details;
+    
+    let message = backendError || error.message || "An error occurred";
+    if (details) {
+      // If it's a validation error array from Zod, format it nicely
+      if (Array.isArray(details)) {
+        message = details.map((d: any) => d.message).join(", ");
+      } else {
+        message = `${message}: ${JSON.stringify(details)}`;
+      }
+    }
+    
     return Promise.reject(new Error(message));
   }
 );
