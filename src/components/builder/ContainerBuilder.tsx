@@ -34,7 +34,7 @@ export function ContainerBuilder({ planType = "veg" }: Props) {
       if (category !== "all" && it.category !== category) return false;
       return true;
     });
-  }, [category, planType]);
+  }, [category, planType, inventoryItems]);
 
   const handleAdd = (item: FoodItem, fromRect: DOMRect) => {
     if (selectedItems.find((s) => s.id === item.id)) {

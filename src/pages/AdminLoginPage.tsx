@@ -69,7 +69,7 @@ export default function AdminLoginPage() {
         )}
 
         <p className="mt-5 text-center text-[11px] text-textsecond">
-          Dev hint: <code className="rounded bg-surface px-1.5 py-0.5">9999999999</code> / <code className="rounded bg-surface px-1.5 py-0.5">admin123</code>
+          Dev hint: <code className="rounded bg-surface px-1.5 py-0.5">9999999999</code> / <code className="rounded bg-surface px-1.5 py-0.5">Admin@1234</code>
         </p>
       </motion.div>
     </div>

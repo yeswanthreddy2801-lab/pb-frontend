@@ -7,13 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ContainerBuilder } from "@/components/builder/ContainerBuilder";
-import { PLANS } from "@/mock/data/foodItems.data";
+import { api } from "@/lib/api";
+import { SubscriptionPlan } from "@/types/food.types";
 import { useBuilderStore, builderTotals } from "@/store/builderStore";
 import { useSubscriptionStore } from "@/store/subscriptionStore";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { formatINR } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 
 const STEPS = ["Plan", "Build box", "Delivery", "Review"];
 
@@ -31,6 +33,13 @@ export default function SubscriptionBuilder() {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<string | null>(null);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+
+  useEffect(() => {
+    api.get("/food-items/plans").then(res => {
+      if (res.success) setPlans(res.data);
+    }).catch(console.error);
+  }, []);
 
   const totals = builderTotals(selectedItems);
 
@@ -106,7 +115,7 @@ export default function SubscriptionBuilder() {
 
         {step === 0 && (
           <div className="grid gap-5 md:grid-cols-3">
-            {PLANS.map((p) => {
+            {plans.map((p) => {
               const active = selectedPlan?.id === p.id;
               return (
                 <button key={p.id} onClick={() => setPlan(p)}
@@ -133,7 +142,7 @@ export default function SubscriptionBuilder() {
         )}
 
         {step === 1 && selectedPlan && (
-          <ContainerBuilder planType={selectedPlan.slug === "veg" ? "veg" : selectedPlan.slug === "nonveg" ? "nonveg" : "both"} />
+          <ContainerBuilder planType={selectedPlan.slug.includes("nonveg") ? "nonveg" : selectedPlan.slug.includes("veg") ? "veg" : "both"} />
         )}
 
         {step === 2 && (

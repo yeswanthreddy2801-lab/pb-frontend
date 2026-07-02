@@ -87,7 +87,7 @@ export const useSubscriptionStore = create<SubStore>((set, get) => ({
       let addressId = "";
       try {
         const addressRes = await api.post("/users/me/addresses", {
-          street_address: s.address,
+          address: s.address,
           city: "Not specified",
           state: "Not specified",
           pincode: "000000",
