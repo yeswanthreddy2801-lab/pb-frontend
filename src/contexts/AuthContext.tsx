@@ -9,7 +9,7 @@ interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  loginUser: (mobile: string) => Promise<User>;
+  loginUser: (mobile: string, name: string) => Promise<User>;
   registerUser: (data: Omit<User, "id" | "createdAt" | "isAdmin">) => Promise<User>;
   loginAdmin: (mobile: string, password: string) => Promise<boolean>;
   updateProfile: (data: Partial<User>) => Promise<void>;
