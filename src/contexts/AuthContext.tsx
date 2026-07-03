@@ -57,8 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const loginUser = async (mobile: string): Promise<User> => {
-    const res = await api.post("/auth/login", { mobile });
+  const loginUser = async (mobile: string, name: string): Promise<User> => {
+    const res = await api.post("/auth/login", { mobile, name });
     if (res.success && res.data) {
       localStorage.setItem(STORAGE_TOKEN_KEY, res.data.token);
       persistUser(res.data.user);

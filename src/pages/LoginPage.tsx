@@ -11,15 +11,19 @@ export default function LoginPage() {
   const location = useLocation();
   const { loginUser } = useAuth();
   const [mobile, setMobile] = useState("");
+  const [name, setName] = useState("");
   const [err, setErr] = useState<string | null>(null);
 
-  const valid = /^[6-9]\d{9}$/.test(mobile);
+  const validMobile = /^[6-9]\d{9}$/.test(mobile);
+  const validName = name.trim().length > 0;
+  const valid = validMobile && validName;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!valid) { setErr("Enter a valid 10-digit Indian mobile"); return; }
+    if (!validMobile) { setErr("Enter a valid 10-digit Indian mobile"); return; }
+    if (!validName) { setErr("Enter your name"); return; }
     try {
-      await loginUser(mobile);
+      await loginUser(mobile, name);
       toast.success("Logged in 🥗");
       navigate((location.state as { from?: string })?.from || "/dashboard");
     } catch (err: any) {
@@ -37,9 +41,20 @@ export default function LoginPage() {
           <span className="text-3xl">🥗</span> ProteinBox
         </Link>
         <h1 className="mt-6 text-center font-display text-2xl font-bold">Welcome 👋</h1>
-        <p className="mt-1 text-center text-sm text-textsecond">Enter your mobile number to continue</p>
+        <p className="mt-1 text-center text-sm text-textsecond">Enter your details to continue</p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
+          <div>
+            <label className="text-sm font-semibold text-textprimary">Name</label>
+            <div className="mt-1 flex overflow-hidden rounded-xl border border-bordersoft focus-within:border-brand-green focus-within:ring-2 focus-within:ring-brand-green/30">
+              <Input
+                value={name}
+                onChange={(e) => { setName(e.target.value); setErr(null); }}
+                placeholder="John Doe"
+                className="border-0 focus-visible:ring-0"
+              />
+            </div>
+          </div>
           <div>
             <label className="text-sm font-semibold text-textprimary">Mobile number</label>
             <div className="mt-1 flex overflow-hidden rounded-xl border border-bordersoft focus-within:border-brand-green focus-within:ring-2 focus-within:ring-brand-green/30">
