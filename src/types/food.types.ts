@@ -32,10 +32,12 @@ export interface FlyingItem {
 export interface SubscriptionPlan {
   id: string;
   name: string;
-  slug: 'veg' | 'nonveg' | 'fitness';
+  slug: string;
   description: string;
+  category?: string;
   basePrice: number;
   maxItems: number;
   emoji: string;
   color: string;
+  isActive?: boolean;
 }

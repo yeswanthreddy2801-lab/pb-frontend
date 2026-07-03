@@ -1,5 +1,12 @@
 import axios from "axios";
 
+declare module 'axios' {
+  export interface AxiosResponse<T = any> {
+    success?: boolean;
+    message?: string;
+  }
+}
+
 export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 export const api = axios.create({
