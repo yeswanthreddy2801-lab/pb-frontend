@@ -125,6 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         isAdmin: !!user?.isAdmin || (user as any)?.role === 'admin' || (user as any)?.role === 'superadmin',
         loginUser,
+        checkUser,
         registerUser,
         loginAdmin,
         updateProfile,
