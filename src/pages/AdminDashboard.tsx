@@ -1,15 +1,17 @@
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { useSubscriptionStore } from "@/store/subscriptionStore";
+import { useAuth } from "@/contexts/AuthContext";
 import { formatINR } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const STATUS_TONE: Record<string, string> = {
   pending: "bg-amber-100 text-amber-900",
+  approved: "bg-blue-100 text-blue-900",
   active: "bg-emerald-100 text-emerald-900",
   rejected: "bg-rose-100 text-rose-700",
   expired: "bg-slate-100 text-slate-700",
@@ -17,6 +19,28 @@ const STATUS_TONE: Record<string, string> = {
 
 export default function AdminDashboard() {
   const { subscriptions: subs, fetchSubscriptions, approve, reject } = useSubscriptionStore();
+  const { changeAdminPassword } = useAuth();
+  
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [isChanging, setIsChanging] = useState(false);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsChanging(true);
+    try {
+      await changeAdminPassword(currentPassword, newPassword);
+      toast.success("Password changed successfully!");
+      setShowPasswordModal(false);
+      setCurrentPassword("");
+      setNewPassword("");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to change password");
+    } finally {
+      setIsChanging(false);
+    }
+  };
 
   useEffect(() => {
     fetchSubscriptions();
@@ -39,10 +63,38 @@ export default function AdminDashboard() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="font-display text-3xl font-bold">Admin dashboard 🛡️</h1>
           <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={() => setShowPasswordModal(true)} className="border-slate-300 text-slate-700 hover:bg-slate-100">🔐 Change Password</Button>
+            <Link to="/admin/plans"><Button variant="outline" className="border-brand-orange text-brand-orange hover:bg-brand-orange/10">📝 Manage Plans</Button></Link>
             <Link to="/admin/inventory"><Button variant="outline" className="border-brand-green text-brand-green hover:bg-brand-green/10">📦 Manage Inventory</Button></Link>
             <Link to="/admin/orders"><Button variant="outline">View all orders →</Button></Link>
           </div>
         </div>
+
+        {/* Change Password Modal */}
+        {showPasswordModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+              <h2 className="font-display text-2xl font-bold">Change Password</h2>
+              <p className="mt-1 text-sm text-textsecond">Update your admin account password below.</p>
+              <form onSubmit={handlePasswordChange} className="mt-5 space-y-4">
+                <div>
+                  <label className="text-sm font-semibold">Current Password</label>
+                  <input type="password" required value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="mt-1 w-full rounded-lg border border-bordersoft p-3" />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold">New Password</label>
+                  <input type="password" required minLength={6} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="mt-1 w-full rounded-lg border border-bordersoft p-3" />
+                </div>
+                <div className="mt-6 flex gap-3">
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => setShowPasswordModal(false)}>Cancel</Button>
+                  <Button type="submit" disabled={isChanging} className="flex-1 bg-brand-green text-white hover:bg-emerald-600">
+                    {isChanging ? "Saving..." : "Change Password"}
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
 
         {/* stats */}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

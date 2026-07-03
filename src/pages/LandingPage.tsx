@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Sparkles, ArrowRight, Truck, Phone, ClipboardList, Target, Zap, Brain, Heart, Moon } from "lucide-react";
@@ -5,7 +6,8 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { PLANS } from "@/mock/data/foodItems.data";
+import { api } from "@/lib/api";
+import type { SubscriptionPlan } from "@/types/food.types";
 
 const STATS = [
   { v: "25+", l: "Items" },
@@ -47,10 +49,18 @@ const FAQS = [
   ["What time is delivery?", "Between 6–10 AM. Choose your preferred slot."],
   ["Can I pause my subscription?", "Yes, contact support to pause anytime."],
   ["What areas do you deliver to?", "Currently Bengaluru, Mumbai and Pune. More cities soon."],
-  ["How do I contact support?", "WhatsApp +91 90000 00000 or email hello@proteinbox.in."],
+  ["How do I contact support?", "WhatsApp +91 8297364002 or email hello@proteinbox.in."],
 ];
 
 export default function LandingPage() {
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+
+  useEffect(() => {
+    api.get("/food-items/plans").then(res => {
+      if (res.success) setPlans(res.data);
+    }).catch(console.error);
+  }, []);
+
   return (
     <div className="min-h-screen bg-surface">
       <Navbar />
@@ -142,7 +152,7 @@ export default function LandingPage() {
           <h2 className="text-center font-display text-4xl font-extrabold text-textprimary">Pick your plan</h2>
           <p className="mt-2 text-center text-textsecond">Customisable. Cancellable anytime. Pay offline.</p>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {PLANS.map((p) => (
+            {plans.map((p) => (
               <motion.div
                 key={p.id}
                 whileHover={{ y: -4 }}
@@ -250,8 +260,8 @@ export default function LandingPage() {
           <h2 className="font-display text-4xl font-extrabold text-textprimary">Talk to us</h2>
           <p className="mt-2 text-textsecond">We typically reply within an hour.</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <a href="https://wa.me/919000000000" className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-6 py-3 font-semibold text-white shadow-lg">💬 WhatsApp us</a>
-            <a href="tel:+919000000000" className="inline-flex items-center gap-2 rounded-full border border-bordersoft bg-white px-6 py-3 font-semibold text-textprimary">📞 +91 90000 00000</a>
+            <a href="https://wa.me/918297364002" className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-6 py-3 font-semibold text-white shadow-lg">💬 WhatsApp us</a>
+            <a href="tel:+918297364002" className="inline-flex items-center gap-2 rounded-full border border-bordersoft bg-white px-6 py-3 font-semibold text-textprimary">📞 +91 8297364002</a>
           </div>
         </div>
       </section>

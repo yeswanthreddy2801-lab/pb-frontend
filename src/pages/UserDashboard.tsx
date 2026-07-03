@@ -17,7 +17,10 @@ function greet() {
 
 const STATUS_META: Record<string, { label: string; tone: string; emoji: string }> = {
   pending: { label: "Pending approval", tone: "bg-amber-100 text-amber-900 border-amber-200", emoji: "⏳" },
+  approved: { label: "Approved", tone: "bg-blue-100 text-blue-900 border-blue-200", emoji: "👍" },
   active: { label: "Active", tone: "bg-emerald-100 text-emerald-900 border-emerald-200", emoji: "✅" },
+  completed: { label: "Completed", tone: "bg-slate-100 text-slate-700 border-slate-200", emoji: "🏁" },
+  cancelled: { label: "Cancelled", tone: "bg-rose-100 text-rose-700 border-rose-200", emoji: "✖️" },
   expired: { label: "Expired", tone: "bg-slate-100 text-slate-700 border-slate-200", emoji: "⚠️" },
   rejected: { label: "Rejected", tone: "bg-rose-100 text-rose-700 border-rose-200", emoji: "✖️" },
 };

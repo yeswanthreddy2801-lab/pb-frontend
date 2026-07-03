@@ -10,6 +10,7 @@ import SubscriptionBuilder from "@/pages/SubscriptionBuilder";
 import AdminLoginPage from "@/pages/AdminLoginPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminInventory from "@/pages/AdminInventory";
+import AdminPlans from "@/pages/AdminPlans";
 
 function Protected({ children, admin = false }: { children: ReactNode; admin?: boolean }) {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -46,6 +47,7 @@ export function App() {
         <Route path="/admin" element={<Protected admin><AdminDashboard /></Protected>} />
         <Route path="/admin/orders" element={<Protected admin><AdminDashboard /></Protected>} />
         <Route path="/admin/inventory" element={<Protected admin><AdminInventory /></Protected>} />
+        <Route path="/admin/plans" element={<Protected admin><AdminPlans /></Protected>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

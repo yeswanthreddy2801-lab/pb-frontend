@@ -13,6 +13,7 @@ interface AuthContextValue {
   registerUser: (data: Omit<User, "id" | "createdAt" | "isAdmin">) => Promise<User>;
   loginAdmin: (mobile: string, password: string) => Promise<boolean>;
   updateProfile: (data: Partial<User>) => Promise<void>;
+  changeAdminPassword: (currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -99,6 +100,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const changeAdminPassword = async (currentPassword: string, newPassword: string) => {
+    const res = await api.patch("/auth/admin/password", { currentPassword, newPassword });
+    if (!res.success) {
+      throw new Error(res.message || "Failed to change password");
+    }
+  };
+
   const logout = () => {
     api.post("/auth/logout").catch(() => {});
     persistUser(null);
@@ -114,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         registerUser,
         loginAdmin,
         updateProfile,
+        changeAdminPassword,
         logout,
       }}
     >

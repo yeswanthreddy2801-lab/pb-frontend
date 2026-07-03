@@ -25,7 +25,7 @@ export function Footer() {
         <div>
           <h4 className="font-display font-bold text-textprimary">Contact</h4>
           <ul className="mt-2 space-y-1 text-sm text-textsecond">
-            <li>📞 +91 90000 00000</li>
+            <li>📞 +91 8297364002</li>
             <li>✉️ hello@proteinbox.in</li>
           </ul>
         </div>
