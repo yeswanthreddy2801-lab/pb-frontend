@@ -16,10 +16,6 @@ export default function AdminLoginPage() {
   const onContinue = (e: React.FormEvent) => {
     e.preventDefault();
     if (!/^[6-9]\d{9}$/.test(mobile)) { toast.error("Enter a valid mobile"); return; }
-    if (mobile !== "9999999999") {
-      toast.error("This number isn't registered as admin");
-      return;
-    }
     setNeedsPwd(true);
   };
 
