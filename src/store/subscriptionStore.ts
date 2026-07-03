@@ -37,20 +37,15 @@ export const useSubscriptionStore = create<SubStore>((set, get) => ({
   fetchSubscriptions: async () => {
     set({ loading: true });
     try {
-      // For a real app, you might want to decode the token to see if they are admin,
-      // but if the user has `isAdmin` we can fetch all orders, else fetch user orders.
-      // Let's assume we try admin first, if it fails, try my. Or we rely on the component.
-      // We'll just fetch /subscriptions/my for regular users and /admin/orders for admins.
-      // We can do a try-catch for admin, then fallback to my.
+      const userStr = localStorage.getItem("proteinbox_user");
+      const user = userStr ? JSON.parse(userStr) : null;
+      const isAdmin = user?.role === 'admin' || user?.role === 'superadmin' || !!user?.isAdmin;
+
       let res;
-      try {
+      if (isAdmin) {
         res = await api.get("/admin/orders");
-      } catch (e: any) {
-        if (e.message.includes("Admin") || e.message.includes("403")) {
-          res = await api.get("/subscriptions/my");
-        } else {
-          throw e;
-        }
+      } else {
+        res = await api.get("/subscriptions/my");
       }
       
       if (res && res.data) {
