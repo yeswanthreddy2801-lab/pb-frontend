@@ -9,7 +9,8 @@ interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  loginUser: (mobile: string, name: string) => Promise<User>;
+  loginUser: (mobile: string, name?: string) => Promise<User>;
+  checkUser: (mobile: string) => Promise<boolean>;
   registerUser: (data: Omit<User, "id" | "createdAt" | "isAdmin">) => Promise<User>;
   loginAdmin: (mobile: string, password: string) => Promise<boolean>;
   updateProfile: (data: Partial<User>) => Promise<void>;
@@ -57,7 +58,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const loginUser = async (mobile: string, name: string): Promise<User> => {
+  const checkUser = async (mobile: string): Promise<boolean> => {
+    const res = await api.post("/auth/check-user", { mobile });
+    return res.success && res.data?.exists;
+  };
+
+  const loginUser = async (mobile: string, name?: string): Promise<User> => {
     const res = await api.post("/auth/login", { mobile, name });
     if (res.success && res.data) {
       localStorage.setItem(STORAGE_TOKEN_KEY, res.data.token);

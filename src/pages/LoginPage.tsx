@@ -9,25 +9,47 @@ import { toast } from "sonner";
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { loginUser } = useAuth();
+  const { loginUser, checkUser } = useAuth();
+  const [step, setStep] = useState<1 | 2>(1);
   const [mobile, setMobile] = useState("");
   const [name, setName] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const validMobile = /^[6-9]\d{9}$/.test(mobile);
   const validName = name.trim().length > 0;
-  const valid = validMobile && validName;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validMobile) { setErr("Enter a valid 10-digit Indian mobile"); return; }
-    if (!validName) { setErr("Enter your name"); return; }
+    
+    setLoading(true);
+    setErr(null);
+
     try {
-      await loginUser(mobile, name);
-      toast.success("Logged in 🥗");
-      navigate((location.state as { from?: string })?.from || "/dashboard");
+      if (step === 1) {
+        // Step 1: Check if user exists
+        const exists = await checkUser(mobile);
+        if (exists) {
+          // Existing user -> login directly
+          await loginUser(mobile);
+          toast.success("Welcome back 🥗");
+          navigate((location.state as { from?: string })?.from || "/dashboard");
+        } else {
+          // New user -> ask for name
+          setStep(2);
+        }
+      } else {
+        // Step 2: New user enters name
+        if (!validName) { setErr("Enter your name"); setLoading(false); return; }
+        await loginUser(mobile, name);
+        toast.success("Account created! 🥗");
+        navigate((location.state as { from?: string })?.from || "/dashboard");
+      }
     } catch (err: any) {
       setErr(err.message || "Failed to login");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -40,37 +62,55 @@ export default function LoginPage() {
         <Link to="/" className="flex items-center justify-center gap-2 font-display text-2xl font-bold">
           <span className="text-3xl">🥗</span> ProteinBox
         </Link>
-        <h1 className="mt-6 text-center font-display text-2xl font-bold">Welcome 👋</h1>
-        <p className="mt-1 text-center text-sm text-textsecond">Enter your details to continue</p>
+        <h1 className="mt-6 text-center font-display text-2xl font-bold">
+          {step === 1 ? "Welcome 👋" : "Create Account"}
+        </h1>
+        <p className="mt-1 text-center text-sm text-textsecond">
+          {step === 1 ? "Enter your mobile number to continue" : "What should we call you?"}
+        </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <div>
-            <label className="text-sm font-semibold text-textprimary">Name</label>
-            <div className="mt-1 flex overflow-hidden rounded-xl border border-bordersoft focus-within:border-brand-green focus-within:ring-2 focus-within:ring-brand-green/30">
-              <Input
-                value={name}
-                onChange={(e) => { setName(e.target.value); setErr(null); }}
-                placeholder="John Doe"
-                className="border-0 focus-visible:ring-0"
-              />
+          {step === 1 && (
+            <div>
+              <label className="text-sm font-semibold text-textprimary">Mobile number</label>
+              <div className="mt-1 flex overflow-hidden rounded-xl border border-bordersoft focus-within:border-brand-green focus-within:ring-2 focus-within:ring-brand-green/30">
+                <span className="flex items-center bg-surface px-3 text-sm font-semibold text-textsecond">+91</span>
+                <Input
+                  value={mobile}
+                  onChange={(e) => { setMobile(e.target.value.replace(/\D/g, "").slice(0, 10)); setErr(null); }}
+                  placeholder="9876543210"
+                  className="border-0 focus-visible:ring-0"
+                  inputMode="numeric"
+                  disabled={loading}
+                />
+              </div>
+              {err && <p className="mt-1 text-xs font-semibold text-rose-500">{err}</p>}
             </div>
-          </div>
-          <div>
-            <label className="text-sm font-semibold text-textprimary">Mobile number</label>
-            <div className="mt-1 flex overflow-hidden rounded-xl border border-bordersoft focus-within:border-brand-green focus-within:ring-2 focus-within:ring-brand-green/30">
-              <span className="flex items-center bg-surface px-3 text-sm font-semibold text-textsecond">+91</span>
-              <Input
-                value={mobile}
-                onChange={(e) => { setMobile(e.target.value.replace(/\D/g, "").slice(0, 10)); setErr(null); }}
-                placeholder="9876543210"
-                className="border-0 focus-visible:ring-0"
-                inputMode="numeric"
-              />
+          )}
+
+          {step === 2 && (
+            <div>
+              <label className="text-sm font-semibold text-textprimary">Name</label>
+              <div className="mt-1 flex overflow-hidden rounded-xl border border-bordersoft focus-within:border-brand-green focus-within:ring-2 focus-within:ring-brand-green/30">
+                <Input
+                  value={name}
+                  onChange={(e) => { setName(e.target.value); setErr(null); }}
+                  placeholder="John Doe"
+                  className="border-0 focus-visible:ring-0"
+                  autoFocus
+                  disabled={loading}
+                />
+              </div>
+              {err && <p className="mt-1 text-xs font-semibold text-rose-500">{err}</p>}
             </div>
-            {err && <p className="mt-1 text-xs font-semibold text-rose-500">{err}</p>}
-          </div>
-          <Button type="submit" disabled={!valid} className="w-full bg-brand-green text-white hover:bg-emerald-600">
-            Continue
+          )}
+
+          <Button 
+            type="submit" 
+            disabled={loading || (step === 1 ? !validMobile : !validName)} 
+            className="w-full bg-brand-green text-white hover:bg-emerald-600"
+          >
+            {loading ? "Please wait..." : "Continue"}
           </Button>
         </form>
 
