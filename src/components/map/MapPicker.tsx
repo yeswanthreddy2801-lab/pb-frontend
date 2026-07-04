@@ -123,8 +123,13 @@ function LocationMarker({ position, setPosition, setAddress, isGeocoding, setIsG
           },
           (err) => {
             console.warn("Could not get location", err);
-            if (err.code === 1) toast.error("Location access denied. Please enable location permissions.");
-            else toast.error("Could not fetch your location automatically.");
+            if (err.code === 1) {
+              toast.error("Location access denied. Please allow location permissions in your browser.");
+            } else if (err.code === 2) {
+              toast.error("Your device's location is turned off. Please turn on your GPS/Location and refresh the page.");
+            } else {
+              toast.error("Could not fetch your location. Please select it manually.");
+            }
           },
           { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
