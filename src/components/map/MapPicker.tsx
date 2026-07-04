@@ -227,9 +227,30 @@ export function MapPicker({ address, onChangeAddress }: MapPickerProps) {
       }
       setIsSearching(true);
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&viewbox=83.10,17.85,83.40,17.60&countrycodes=in`);
+        // Automatically append Visakhapatnam to restrict search to Vizag
+        const searchQuery = query.toLowerCase().includes('visakhapatnam') || query.toLowerCase().includes('vizag') 
+          ? query 
+          : `${query} Visakhapatnam`;
+          
+        // Use Photon API (Komoot) which uses Elasticsearch for fuzzy matching/spelling mistakes
+        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(searchQuery)}&lat=17.72&lon=83.25&limit=5`);
         const data = await res.json();
-        setSuggestions(data.slice(0, 4));
+        
+        // Map Photon's GeoJSON format to our suggestions format
+        const mappedSuggestions = data.features.map((f: any) => {
+          const p = f.properties;
+          const addressParts = [p.name, p.street, p.locality, p.district, p.city, p.state].filter(Boolean);
+          // Remove duplicates (e.g., if locality and city are the same)
+          const uniqueParts = Array.from(new Set(addressParts));
+          
+          return {
+            lat: f.geometry.coordinates[1].toString(),
+            lon: f.geometry.coordinates[0].toString(),
+            display_name: uniqueParts.join(", ")
+          };
+        });
+        
+        setSuggestions(mappedSuggestions);
       } catch (error) {
         console.error("Search failed:", error);
       } finally {
