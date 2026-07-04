@@ -55,7 +55,7 @@ export const LunchBoxCanvas = forwardRef<HTMLDivElement>((_props, ref) => {
                       </span>
                       <button
                         onClick={() => removeItem(item.id)}
-                        className="absolute right-0.5 top-0.5 hidden h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-white shadow group-hover:flex"
+                        className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-white shadow lg:hidden lg:group-hover:flex"
                         aria-label={`Remove ${item.name}`}
                       >
                         <X className="h-2.5 w-2.5" />
