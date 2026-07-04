@@ -216,6 +216,7 @@ export function MapPicker({ address, onChangeAddress }: MapPickerProps) {
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const isTypingRef = useRef(false);
 
   // Debounced search for Autocomplete
   useEffect(() => {
@@ -226,7 +227,6 @@ export function MapPicker({ address, onChangeAddress }: MapPickerProps) {
       }
       setIsSearching(true);
       try {
-        // Search restricted to Visakhapatnam box
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&viewbox=83.10,17.85,83.40,17.60&bounded=1`);
         const data = await res.json();
         setSuggestions(data.slice(0, 4));
@@ -237,16 +237,16 @@ export function MapPicker({ address, onChangeAddress }: MapPickerProps) {
       }
     };
 
-    const timeoutId = setTimeout(() => {
-      // Only search if user typed something and it's not the exact same as a selected suggestion
-      // We assume if they type, we fetch suggestions
-      searchArea(address);
-    }, 1000);
-
-    return () => clearTimeout(timeoutId);
+    if (isTypingRef.current) {
+      const timeoutId = setTimeout(() => {
+        searchArea(address);
+      }, 1000);
+      return () => clearTimeout(timeoutId);
+    }
   }, [address]);
 
   const handleSuggestionClick = (s: any) => {
+    isTypingRef.current = false;
     const lat = parseFloat(s.lat);
     const lon = parseFloat(s.lon);
     const latlng = new L.LatLng(lat, lon);
@@ -285,6 +285,7 @@ export function MapPicker({ address, onChangeAddress }: MapPickerProps) {
             position={position}
             setPosition={setPosition}
             setAddress={(addr: string) => {
+              isTypingRef.current = false;
               onChangeAddress(addr);
               setSuggestions([]); // clear suggestions when dragging pin
             }}
@@ -306,7 +307,11 @@ export function MapPicker({ address, onChangeAddress }: MapPickerProps) {
         <textarea
           rows={3}
           value={address}
-          onChange={(e) => onChangeAddress(e.target.value)}
+          onChange={(e) => {
+            isTypingRef.current = true;
+            onChangeAddress(e.target.value);
+            if (e.target.value.length < 5) setSuggestions([]);
+          }}
           className="w-full rounded-md border border-bordersoft p-2 text-sm bg-white"
           placeholder="Click the map or type to search for an address..."
         />
