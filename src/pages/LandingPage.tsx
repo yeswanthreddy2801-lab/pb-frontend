@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Sparkles, ArrowRight, Truck, Phone, ClipboardList, Target, Zap, Brain, Heart, Moon } from "lucide-react";
@@ -7,7 +6,6 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { api } from "@/lib/api";
-import type { SubscriptionPlan } from "@/types/food.types";
 
 const STATS = [
   { v: "25+", l: "Items" },
@@ -42,8 +40,8 @@ const TESTIMONIALS = [
 ];
 
 const FAQS = [
-  ["How does ProteinBox work?", "Pick a plan, build your box and submit. We call you to confirm and deliver fresh every morning."],
-  ["What plans are available?", "Veg, Non-Veg and a High Protein Fitness box. Customise items within your plan."],
+  ["How does ProteinBox work?", "Build your custom protein box and submit. We call you to confirm and deliver fresh every morning."],
+  ["What items are available?", "We offer 25+ fresh Veg and Non-Veg items like Greek Yogurt, Boiled Eggs, Sprouts, and Grilled Chicken."],
   ["How do I pay?", "No online payment. Our team contacts you and collects cash / UPI / bank transfer."],
   ["Can I customise my box?", "Yes — pick up to 6 items per box and change them every month."],
   ["What time is delivery?", "Between 6–10 AM. Choose your preferred slot."],
@@ -53,13 +51,6 @@ const FAQS = [
 ];
 
 export default function LandingPage() {
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-
-  useEffect(() => {
-    api.get("/food-items/plans").then(res => {
-      if (res.success) setPlans(res.data);
-    }).catch(console.error);
-  }, []);
 
   return (
     <div className="min-h-screen bg-surface">
@@ -101,11 +92,6 @@ export default function LandingPage() {
                   Build My Protein Box <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
               </Link>
-              <a href="#plans">
-                <Button size="lg" variant="outline" className="rounded-full border-brand-green text-brand-greendark">
-                  View Plans
-                </Button>
-              </a>
             </div>
             <div className="mt-6 flex items-center gap-3">
               <div className="flex -space-x-2">
@@ -118,67 +104,33 @@ export default function LandingPage() {
           </div>
 
           {/* Floating box illustration */}
-          <motion.div
-            animate={{ y: [0, -15, 0] }}
-            transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
-            className="relative mx-auto flex h-[380px] w-[300px] items-center justify-center"
-          >
-            <div className="absolute inset-0 -z-10 rounded-full bg-brand-greenlight/70 blur-2xl" />
-            <div className="relative h-[300px] w-[260px] rounded-3xl border-4 border-slate-300 bg-white shadow-2xl">
-              <div className="flex h-[55px] items-center justify-center rounded-t-2xl bg-gradient-to-r from-brand-green to-emerald-600 font-display font-bold text-white">
-                ProteinBox 🥗
-              </div>
-              <div className="grid grid-cols-2 gap-2 p-3">
-                {["🥚", "🧀", "🌾", "🫘", "🍌", "🥤"].map((e, i) => (
-                  <motion.div
-                    key={i}
-                    animate={{ y: [0, -4, 0] }}
-                    transition={{ duration: 2.2 + i * 0.2, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
-                    className="flex aspect-square items-center justify-center rounded-lg text-3xl"
-                    style={{ background: ["#FEF9C3", "#FFF7ED", "#FFFBEB", "#FEF9C3", "#FEFCE8", "#EDE9FE"][i] }}
-                  >
-                    {e}
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* PLANS */}
-      <section id="plans" className="border-y border-bordersoft bg-white py-20">
-        <div className="mx-auto max-w-7xl px-6">
-          <h2 className="text-center font-display text-4xl font-extrabold text-textprimary">Pick your plan</h2>
-          <p className="mt-2 text-center text-textsecond">Customisable. Cancellable anytime. Pay offline.</p>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {plans.map((p) => (
-              <motion.div
-                key={p.id}
-                whileHover={{ y: -4 }}
-                className="relative flex flex-col rounded-3xl border-2 border-bordersoft bg-white p-7 shadow-sm transition-all hover:border-brand-green hover:shadow-xl"
-              >
-                {p.slug === "fitness" && (
-                  <span className="absolute -top-3 right-6 rounded-full bg-brand-orange px-3 py-1 text-xs font-bold text-white shadow">Most Popular</span>
-                )}
-                <div className="text-5xl">{p.emoji}</div>
-                <h3 className="mt-3 font-display text-2xl font-bold text-textprimary">{p.name}</h3>
-                <p className="mt-1 text-sm text-textsecond">{p.description}</p>
-                <div className="mt-4 font-mono text-3xl font-bold" style={{ color: p.color }}>
-                  ₹{p.basePrice}<span className="text-sm font-medium text-textsecond">/month</span>
+          <Link to="/subscription/build">
+            <motion.div
+              animate={{ y: [0, -15, 0] }}
+              transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
+              className="relative mx-auto flex h-[380px] w-[300px] cursor-pointer items-center justify-center transition-transform hover:scale-105"
+            >
+              <div className="absolute inset-0 -z-10 rounded-full bg-brand-greenlight/70 blur-2xl" />
+              <div className="relative h-[300px] w-[260px] rounded-3xl border-4 border-slate-300 bg-white shadow-2xl">
+                <div className="flex h-[55px] items-center justify-center rounded-t-2xl bg-gradient-to-r from-brand-green to-emerald-600 font-display font-bold text-white">
+                  ProteinBox 🥗
                 </div>
-                <ul className="mt-4 flex-1 space-y-1.5 text-sm text-textsecond">
-                  <li>✓ Up to {p.maxItems} items per box</li>
-                  <li>✓ Daily fresh delivery</li>
-                  <li>✓ Change items anytime</li>
-                  <li>✓ Pause or cancel anytime</li>
-                </ul>
-                <Link to="/subscription/build" className="mt-6">
-                  <Button className="w-full bg-brand-green text-white hover:bg-emerald-600">Select plan</Button>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+                <div className="grid grid-cols-2 gap-2 p-3">
+                  {["🥚", "🧀", "🌾", "🫘", "🍌", "🥤"].map((e, i) => (
+                    <motion.div
+                      key={i}
+                      animate={{ y: [0, -4, 0] }}
+                      transition={{ duration: 2.2 + i * 0.2, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
+                      className="flex aspect-square items-center justify-center rounded-lg text-3xl"
+                      style={{ background: ["#FEF9C3", "#FFF7ED", "#FFFBEB", "#FEF9C3", "#FEFCE8", "#EDE9FE"][i] }}
+                    >
+                      {e}
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </Link>
         </div>
       </section>
 

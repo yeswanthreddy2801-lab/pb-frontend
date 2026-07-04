@@ -73,7 +73,7 @@ export default function UserDashboard() {
                 <p className="text-sm font-semibold uppercase tracking-wider opacity-70">
                   {STATUS_META[current.status]?.emoji} {STATUS_META[current.status]?.label}
                 </p>
-                <h2 className="mt-1 font-display text-2xl font-bold">{current.plan.emoji} {current.plan.name}</h2>
+                <h2 className="mt-1 font-display text-2xl font-bold">📦 Custom Protein Box</h2>
                 <p className="mt-1 text-sm opacity-80">Starts {current.startDate} · Order #{current.id.slice(0, 8).toUpperCase()}</p>
               </div>
               <div className="text-right">
@@ -120,7 +120,7 @@ export default function UserDashboard() {
               {mySubs.map((s) => (
                 <li key={s.id} className="flex items-center justify-between rounded-xl border border-bordersoft p-3">
                   <div>
-                    <p className="font-semibold">{s.plan.emoji} {s.plan.name}</p>
+                    <p className="font-semibold">📦 Custom Box</p>
                     <p className="text-xs text-textsecond">Submitted {new Date(s.submittedAt).toLocaleString("en-IN")}</p>
                   </div>
                   <span className={cn("rounded-full border px-2.5 py-1 text-xs font-semibold", STATUS_META[s.status]?.tone)}>

@@ -9,11 +9,7 @@ import { LunchBoxCanvas } from "./LunchBoxCanvas";
 import { NutritionSummary } from "./NutritionSummary";
 import { FlyingItemAnimation } from "./FlyingItemAnimation";
 
-interface Props {
-  planType?: PlanType;
-}
-
-export function ContainerBuilder({ planType = "veg" }: Props) {
+export function ContainerBuilder() {
   const boxRef = useRef<HTMLDivElement>(null);
   const [category, setCategory] = useState("all");
   const selectedItems = useBuilderStore((s) => s.selectedItems);
@@ -29,12 +25,10 @@ export function ContainerBuilder({ planType = "veg" }: Props) {
   const items = useMemo(() => {
     return inventoryItems.filter((it) => {
       if (!it.isActive || !it.isAvailable) return false;
-      if (planType === "veg" && it.planType === "nonveg") return false;
-      if (planType === "nonveg") { /* allow both veg + nonveg */ }
       if (category !== "all" && it.category !== category) return false;
       return true;
     });
-  }, [category, planType, inventoryItems]);
+  }, [category, inventoryItems]);
 
   const handleAdd = (item: FoodItem, fromRect: DOMRect) => {
     if (selectedItems.find((s) => s.id === item.id)) {

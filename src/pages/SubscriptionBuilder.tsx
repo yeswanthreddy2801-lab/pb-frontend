@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, ChevronRight } from "lucide-react";
@@ -8,22 +8,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ContainerBuilder } from "@/components/builder/ContainerBuilder";
 import { MapPicker } from "@/components/map/MapPicker";
-import { api } from "@/lib/api";
-import { SubscriptionPlan } from "@/types/food.types";
 import { useBuilderStore, builderTotals } from "@/store/builderStore";
 import { useSubscriptionStore } from "@/store/subscriptionStore";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { formatINR } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
 
-const STEPS = ["Plan", "Build box", "Delivery", "Review"];
+const STEPS = ["Build box", "Delivery", "Review"];
 
 export default function SubscriptionBuilder() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { selectedPlan, setPlan, selectedItems, clearAll } = useBuilderStore();
+  const { selectedItems, clearAll } = useBuilderStore();
   const create = useSubscriptionStore((s) => s.create);
 
   const [step, setStep] = useState(0);
@@ -34,32 +31,28 @@ export default function SubscriptionBuilder() {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<string | null>(null);
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
 
+  // Scroll to top when page opens
   useEffect(() => {
-    api.get("/food-items/plans").then(res => {
-      if (res.success) setPlans(res.data);
-    }).catch(console.error);
+    window.scrollTo(0, 0);
   }, []);
 
   const totals = builderTotals(selectedItems);
 
   const next = () => {
-    if (step === 0 && !selectedPlan) { toast.error("Pick a plan to continue"); return; }
-    if (step === 1 && selectedItems.length === 0) { toast.error("Add at least one item"); return; }
-    if (step === 2 && (!address || address.length < 10)) { toast.error("Add a delivery address"); return; }
+    if (step === 0 && selectedItems.length === 0) { toast.error("Add at least one item"); return; }
+    if (step === 1 && (!address || address.length < 10)) { toast.error("Add a delivery address"); return; }
     setStep((s) => Math.min(STEPS.length - 1, s + 1));
   };
 
   const submit = async () => {
-    if (!user || !selectedPlan) return;
+    if (!user) return;
     setSubmitting(true);
     try {
       await create({
         userId: user.id,
         userMobile: user.mobile,
         userName: user.name || "Customer",
-        plan: selectedPlan,
         items: selectedItems,
         totalPrice: totals.price * 30,
         totalProtein: totals.protein,
@@ -101,7 +94,6 @@ export default function SubscriptionBuilder() {
     <div className="min-h-screen bg-surface">
       <Navbar />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        {/* stepper */}
         <div className="mb-8 flex items-center gap-2 overflow-x-auto">
           {STEPS.map((label, i) => (
             <div key={label} className="flex items-center gap-2">
@@ -116,38 +108,10 @@ export default function SubscriptionBuilder() {
         </div>
 
         {step === 0 && (
-          <div className="grid gap-5 md:grid-cols-3">
-            {plans.map((p) => {
-              const active = selectedPlan?.id === p.id;
-              return (
-                <button key={p.id} onClick={() => setPlan(p)}
-                  className={cn(
-                    "rounded-3xl border-2 bg-white p-6 text-left transition-all hover:-translate-y-0.5 hover:shadow-lg",
-                    active ? "border-brand-green ring-4 ring-brand-green/20" : "border-bordersoft",
-                  )}>
-                  <div className="flex items-start justify-between">
-                    <div className="text-5xl">{p.emoji}</div>
-                    {active && <span className="rounded-full bg-brand-green p-1 text-white"><Check className="h-4 w-4" /></span>}
-                  </div>
-                  <h3 className="mt-3 font-display text-xl font-bold">{p.name}</h3>
-                  <p className="mt-1 text-sm text-textsecond">{p.description}</p>
-                  <div className="mt-3 font-mono text-2xl font-bold" style={{ color: p.color }}>{formatINR(p.basePrice)}<span className="text-sm font-medium text-textsecond">/mo</span></div>
-                  <ul className="mt-3 space-y-1 text-sm text-textsecond">
-                    <li>✓ Up to {p.maxItems} items</li>
-                    <li>✓ Customise daily</li>
-                    <li>✓ Cancel anytime</li>
-                  </ul>
-                </button>
-              );
-            })}
-          </div>
+          <ContainerBuilder />
         )}
 
-        {step === 1 && selectedPlan && (
-          <ContainerBuilder planType={selectedPlan.slug.includes("nonveg") ? "nonveg" : selectedPlan.slug.includes("veg") ? "veg" : "both"} />
-        )}
-
-        {step === 2 && (
+        {step === 1 && (
           <div className="mx-auto max-w-2xl space-y-4 rounded-3xl border border-bordersoft bg-white p-6">
             <h2 className="font-display text-xl font-bold">Delivery details</h2>
             <div>
@@ -165,12 +129,11 @@ export default function SubscriptionBuilder() {
           </div>
         )}
 
-        {step === 3 && selectedPlan && (
+        {step === 2 && (
           <div className="mx-auto max-w-2xl space-y-5">
             <div className="rounded-3xl border border-bordersoft bg-white p-6">
               <h2 className="font-display text-xl font-bold">Review your order</h2>
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <dt className="text-textsecond">Plan</dt><dd className="font-semibold">{selectedPlan.emoji} {selectedPlan.name}</dd>
                 <dt className="text-textsecond">Items</dt><dd className="font-semibold">{selectedItems.length}</dd>
                 <dt className="text-textsecond">Daily protein</dt><dd className="font-mono font-bold text-brand-green">{totals.protein.toFixed(1)}g</dd>
                 <dt className="text-textsecond">Daily calories</dt><dd className="font-mono font-bold">{Math.round(totals.calories)}</dd>
@@ -193,13 +156,14 @@ export default function SubscriptionBuilder() {
           </div>
         )}
 
-        {/* nav */}
         <div className="mt-8 flex items-center justify-between">
           <Button variant="ghost" onClick={() => step === 0 ? navigate(-1) : setStep((s) => s - 1)}>
             ← Back
           </Button>
-          {step < 3 && (
-            <Button onClick={next} className="bg-brand-green text-white hover:bg-emerald-600">Continue →</Button>
+          {step < STEPS.length - 1 && (
+            <Button onClick={next} className="bg-textprimary text-white hover:bg-black">
+              Next Step →
+            </Button>
           )}
         </div>
       </div>

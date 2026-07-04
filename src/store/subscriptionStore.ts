@@ -9,7 +9,7 @@ export interface Subscription {
   userId: string;
   userMobile: string;
   userName: string;
-  plan: SubscriptionPlan;
+  plan?: SubscriptionPlan;
   items: SelectedFoodItem[];
   totalPrice: number;
   totalProtein: number;
@@ -95,13 +95,20 @@ export const useSubscriptionStore = create<SubStore>((set, get) => ({
         console.warn("Failed to create address, using fallback if possible", e);
       }
 
-      // 2. The mock plans might not have a UUID. Let's send a fake one if needed, 
-      // but ideally we should fetch plans from backend.
-      // We will send the plan_id from the selected plan.
+      // 2. We no longer ask users to pick a plan, but the DB requires a plan_id.
+      // We will fetch the first available plan and use its ID.
+      let planId = "";
+      try {
+        const planRes = await api.get("/food-items/plans");
+        if (planRes.success && planRes.data.length > 0) {
+          planId = planRes.data[0].id;
+        }
+      } catch (e) {
+        console.warn("Failed to fetch default plan", e);
+      }
+
       const payload = {
-        // If it's a mock plan ID like 'p1', the backend will reject it because of UUID validation.
-        // We'll pass it as is and if validation fails, the user will see it.
-        plan_id: s.plan.id,
+        plan_id: planId,
         address_id: addressId,
         notes: s.notes,
         duration_days: 30,

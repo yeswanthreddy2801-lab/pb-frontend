@@ -3,10 +3,8 @@ import type { FlyingItem, FoodItem, SelectedFoodItem, SubscriptionPlan } from "@
 
 interface BuilderState {
   selectedItems: SelectedFoodItem[];
-  selectedPlan: SubscriptionPlan | null;
   flyingItems: FlyingItem[];
   maxItems: number;
-  setPlan: (plan: SubscriptionPlan) => void;
   addItem: (item: FoodItem) => boolean;
   removeItem: (id: string) => void;
   clearAll: () => void;
@@ -16,10 +14,8 @@ interface BuilderState {
 
 export const useBuilderStore = create<BuilderState>((set, get) => ({
   selectedItems: [],
-  selectedPlan: null,
   flyingItems: [],
   maxItems: 6,
-  setPlan: (plan) => set({ selectedPlan: plan, maxItems: plan.maxItems, selectedItems: [] }),
   addItem: (item) => {
     const { selectedItems, maxItems } = get();
     if (selectedItems.find((s) => s.id === item.id)) return false;

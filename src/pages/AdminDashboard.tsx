@@ -64,7 +64,6 @@ export default function AdminDashboard() {
           <h1 className="font-display text-3xl font-bold">Admin dashboard 🛡️</h1>
           <div className="flex items-center gap-3">
             <Button variant="outline" onClick={() => setShowPasswordModal(true)} className="border-slate-300 text-slate-700 hover:bg-slate-100">🔐 Change Password</Button>
-            <Link to="/admin/plans"><Button variant="outline" className="border-brand-orange text-brand-orange hover:bg-brand-orange/10">📝 Manage Plans</Button></Link>
             <Link to="/admin/inventory"><Button variant="outline" className="border-brand-green text-brand-green hover:bg-brand-green/10">📦 Manage Inventory</Button></Link>
             <Link to="/admin/orders"><Button variant="outline">View all orders →</Button></Link>
           </div>
@@ -128,7 +127,7 @@ export default function AdminDashboard() {
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="font-display font-bold">{s.userName}</p>
-                      <p className="text-sm text-textsecond">+91 {s.userMobile} · {s.plan.emoji} {s.plan.name}</p>
+                      <p className="text-sm text-textsecond">+91 {s.userMobile} · 📦 Custom Box</p>
                     </div>
                     <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", STATUS_TONE[s.status])}>pending</span>
                   </div>
@@ -169,13 +168,13 @@ export default function AdminDashboard() {
             <div className="mt-3 overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="text-xs uppercase text-textsecond">
-                  <tr><th className="py-2">Customer</th><th>Plan</th><th>Items</th><th>Amount</th><th>Status</th><th>Submitted</th></tr>
+                  <tr><th className="py-2">Customer</th><th>Type</th><th>Items</th><th>Amount</th><th>Status</th><th>Submitted</th></tr>
                 </thead>
                 <tbody>
                   {subs.slice(0, 12).map((s) => (
                     <tr key={s.id} className="border-t border-bordersoft">
                       <td className="py-2"><b>{s.userName}</b><br /><span className="text-xs text-textsecond">+91 {s.userMobile}</span></td>
-                      <td>{s.plan.emoji} {s.plan.name}</td>
+                      <td>📦 Custom Box</td>
                       <td>{s.items.length}</td>
                       <td className="font-mono font-semibold">{formatINR(s.totalPrice)}</td>
                       <td><span className={cn("rounded-full px-2 py-0.5 text-xs font-semibold", STATUS_TONE[s.status])}>{s.status}</span></td>
