@@ -221,13 +221,13 @@ export function MapPicker({ address, onChangeAddress }: MapPickerProps) {
   // Debounced search for Autocomplete
   useEffect(() => {
     const searchArea = async (query: string) => {
-      if (query.length < 5) {
+      if (query.length < 3) {
         setSuggestions([]);
         return;
       }
       setIsSearching(true);
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&viewbox=83.10,17.85,83.40,17.60&bounded=1`);
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&viewbox=83.10,17.85,83.40,17.60&countrycodes=in`);
         const data = await res.json();
         setSuggestions(data.slice(0, 4));
       } catch (error) {
