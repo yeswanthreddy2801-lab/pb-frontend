@@ -15,6 +15,7 @@ export interface Subscription {
   totalProtein: number;
   totalCalories: number;
   address: string;
+  notes?: string;
   startDate: string;
   status: SubscriptionStatus;
   submittedAt: string;
@@ -60,7 +61,8 @@ export const useSubscriptionStore = create<SubStore>((set, get) => ({
           totalPrice: b.total_price,
           totalProtein: b.total_protein || 0,
           totalCalories: b.total_calories || 0,
-          address: b.addresses?.street_address || "Unknown Address",
+          address: b.addresses?.address || "Unknown Address",
+          notes: b.notes || "",
           startDate: b.start_date,
           status: b.status,
           submittedAt: b.created_at,
@@ -101,6 +103,7 @@ export const useSubscriptionStore = create<SubStore>((set, get) => ({
         // We'll pass it as is and if validation fails, the user will see it.
         plan_id: s.plan.id,
         address_id: addressId,
+        notes: s.notes,
         duration_days: 30,
         items: s.items.map((i: any) => ({
           food_item_id: i.id,

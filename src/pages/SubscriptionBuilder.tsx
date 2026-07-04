@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ContainerBuilder } from "@/components/builder/ContainerBuilder";
+import { MapPicker } from "@/components/map/MapPicker";
 import { api } from "@/lib/api";
 import { SubscriptionPlan } from "@/types/food.types";
 import { useBuilderStore, builderTotals } from "@/store/builderStore";
@@ -64,6 +65,7 @@ export default function SubscriptionBuilder() {
         totalProtein: totals.protein,
         totalCalories: totals.calories,
         address,
+        notes,
         startDate,
       });
       setDone(crypto.randomUUID().slice(0, 8).toUpperCase());
@@ -150,7 +152,7 @@ export default function SubscriptionBuilder() {
             <h2 className="font-display text-xl font-bold">Delivery details</h2>
             <div>
               <label className="text-sm font-semibold">Delivery address *</label>
-              <Textarea rows={3} value={address} onChange={(e) => setAddress(e.target.value)} className="mt-1" />
+              <MapPicker address={address} onChangeAddress={setAddress} />
             </div>
             <div>
               <label className="text-sm font-semibold">Preferred start date *</label>

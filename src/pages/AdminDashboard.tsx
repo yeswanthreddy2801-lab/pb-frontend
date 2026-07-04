@@ -143,6 +143,11 @@ export default function AdminDashboard() {
                     <div><span className="text-textsecond">Monthly</span><p className="font-mono font-bold text-brand-orange">{formatINR(s.totalPrice)}</p></div>
                   </div>
                   <p className="mt-2 text-xs text-textsecond">📍 {s.address}</p>
+                  {s.notes && (
+                    <div className="mt-2 rounded-md bg-amber-50 p-2 text-xs text-amber-900 border border-amber-200">
+                      <strong>Notes:</strong> {s.notes}
+                    </div>
+                  )}
                   <div className="mt-4 flex gap-2">
                     <Button onClick={() => { approve(s.id); toast.success("Approved — customer notified"); }}
                       className="flex-1 bg-brand-green text-white hover:bg-emerald-600">Approve</Button>
