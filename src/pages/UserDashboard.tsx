@@ -34,6 +34,13 @@ export default function UserDashboard() {
 
   useEffect(() => {
     fetchSubscriptions();
+    
+    // Poll for updates every 10 seconds so status changes reflect automatically
+    const intervalId = setInterval(() => {
+      fetchSubscriptions();
+    }, 10000);
+    
+    return () => clearInterval(intervalId);
   }, [fetchSubscriptions]);
 
   return (
