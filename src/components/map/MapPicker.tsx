@@ -107,47 +107,67 @@ function LocationMarker({ position, setPosition, setAddress, isGeocoding, setIsG
     }
   }, [position]);
 
-  const locateUser = useCallback(() => {
+  const positionRef = useRef(position);
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
+
+  const locateUser = useCallback((silent = false) => {
     if (navigator.geolocation) {
-      setIsGeocoding(true);
+      if (!silent) setIsGeocoding(true);
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setIsGeocoding(false);
+          if (!silent) setIsGeocoding(false);
           const latlng = new L.LatLng(pos.coords.latitude, pos.coords.longitude);
           setPosition(latlng);
           map.flyTo(latlng, 13);
-          if (!isPointInPolygon(latlng, SERVICE_AREA)) {
+          if (!isPointInPolygon(latlng, SERVICE_AREA) && !silent) {
             toast.error("Your current location is outside our delivery area. Please select a location inside the highlighted area.");
           }
         },
         (err) => {
-          setIsGeocoding(false);
+          if (!silent) setIsGeocoding(false);
           console.warn("Could not get location", err);
-          if (err.code === 1) {
-            toast.error("Location access denied. Please allow location permissions in your browser.");
-          } else if (err.code === 2) {
-            toast.error("Your device's location is turned off. Please turn on your GPS/Location and try again.");
-          } else {
-            toast.error("Could not fetch your location. Please select it manually.");
+          if (!silent) {
+            if (err.code === 1) {
+              toast.error("Location access denied. Please allow location permissions in your browser.");
+            } else if (err.code === 2) {
+              toast.error("Your device's location is turned off. Please turn on your GPS/Location.");
+            } else {
+              toast.error("Could not fetch your location. Please select it manually.");
+            }
           }
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
-    } else {
+    } else if (!silent) {
       toast.error("Geolocation is not supported by your browser or is blocked.");
     }
   }, [map, setPosition, setIsGeocoding]);
 
   useEffect(() => {
-    triggerLocateMe = locateUser;
+    triggerLocateMe = () => locateUser(false);
     return () => { triggerLocateMe = null; };
   }, [locateUser]);
 
   useEffect(() => {
     if (!initialized.current) {
       initialized.current = true;
-      locateUser();
+      locateUser(false); // First attempt with error messages
     }
+
+    // Set up a background polling interval to detect when they turn location on
+    const intervalId = setInterval(() => {
+      // If we don't have a position yet, keep checking silently
+      if (!positionRef.current) {
+        locateUser(true); // silent attempt
+      } else {
+        // If we have a position, stop polling!
+        clearInterval(intervalId);
+      }
+    }, 3000);
+
+    return () => clearInterval(intervalId);
   }, [locateUser]);
 
   return position === null ? null : (
