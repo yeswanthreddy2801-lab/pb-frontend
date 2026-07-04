@@ -109,21 +109,28 @@ function LocationMarker({ position, setPosition, setAddress, isGeocoding, setIsG
 
   // Try to get user's location once on mount
   useEffect(() => {
-    if (!initialized.current && navigator.geolocation) {
+    if (!initialized.current) {
       initialized.current = true;
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const latlng = new L.LatLng(pos.coords.latitude, pos.coords.longitude);
-          setPosition(latlng);
-          map.flyTo(latlng, 13);
-          if (!isPointInPolygon(latlng, SERVICE_AREA)) {
-            toast.error("Your current location is outside our delivery area. Please select a location inside the highlighted area.");
-          }
-        },
-        () => {
-          console.warn("Could not get location");
-        }
-      );
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const latlng = new L.LatLng(pos.coords.latitude, pos.coords.longitude);
+            setPosition(latlng);
+            map.flyTo(latlng, 13);
+            if (!isPointInPolygon(latlng, SERVICE_AREA)) {
+              toast.error("Your current location is outside our delivery area. Please select a location inside the highlighted area.");
+            }
+          },
+          (err) => {
+            console.warn("Could not get location", err);
+            if (err.code === 1) toast.error("Location access denied. Please enable location permissions.");
+            else toast.error("Could not fetch your location automatically.");
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      } else {
+        toast.error("Geolocation is not supported by your browser or is blocked (e.g., testing on local HTTP).");
+      }
     }
   }, [map, setPosition]);
 
