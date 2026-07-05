@@ -53,6 +53,7 @@ export const usePlanStore = create<PlanStore>((set, get) => ({
         max_items: data.maxItems,
         color: data.color,
         icon: data.emoji,
+        is_active: data.isActive !== undefined ? data.isActive : true,
       };
       await api.post("/admin/plans", payload);
       get().fetchPlans();
@@ -73,6 +74,7 @@ export const usePlanStore = create<PlanStore>((set, get) => ({
       if (data.maxItems !== undefined) payload.max_items = data.maxItems;
       if (data.color !== undefined) payload.color = data.color;
       if (data.emoji !== undefined) payload.icon = data.emoji;
+      if (data.isActive !== undefined) payload.is_active = data.isActive;
       
       await api.patch(`/admin/plans/${id}`, payload);
       get().fetchPlans();

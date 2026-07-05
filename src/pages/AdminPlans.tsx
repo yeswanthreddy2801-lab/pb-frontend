@@ -54,10 +54,10 @@ export default function AdminPlans() {
     <div className="min-h-screen bg-surface">
       <Navbar />
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link to="/admin"><Button variant="outline">← Back</Button></Link>
-            <h1 className="font-display text-3xl font-bold">Plans Management 📝</h1>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold">Plans Management 📝</h1>
           </div>
           <Button onClick={() => setShowAddForm(!showAddForm)} className="bg-brand-green text-white hover:bg-emerald-600">
             {showAddForm ? "Cancel" : "Add New Plan"}

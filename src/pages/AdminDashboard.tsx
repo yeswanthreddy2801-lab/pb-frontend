@@ -65,8 +65,9 @@ export default function AdminDashboard() {
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="font-display text-3xl font-bold">Admin dashboard 🛡️</h1>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Button variant="outline" onClick={() => setShowPasswordModal(true)} className="border-slate-300 text-slate-700 hover:bg-slate-100">🔐 Change Password</Button>
+            <Link to="/admin/plans"><Button variant="outline" className="border-emerald-600 text-emerald-600 hover:bg-emerald-50">📝 Manage Plans</Button></Link>
             <Link to="/admin/delivery"><Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">🚚 Deliveries</Button></Link>
             <Link to="/admin/inventory"><Button variant="outline" className="border-brand-green text-brand-green hover:bg-brand-green/10">📦 Manage Inventory</Button></Link>
             <Link to="/admin/orders"><Button variant="outline">View all orders →</Button></Link>
@@ -131,7 +132,9 @@ export default function AdminDashboard() {
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="font-display font-bold">{s.userName}</p>
-                      <p className="text-sm text-textsecond">+91 {s.userMobile} · 📦 Custom Box</p>
+                      <p className="text-sm text-textsecond">
+                        +91 {s.userMobile} · {s.plan ? `${s.plan.emoji || '📦'} ${s.plan.name}` : '🍱 Custom Box'}
+                      </p>
                     </div>
                     <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", STATUS_TONE[s.status])}>pending</span>
                   </div>
@@ -141,8 +144,18 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-                    <div><span className="text-textsecond">Protein</span><p className="font-mono font-bold text-brand-green">{s.totalProtein.toFixed(1)}g</p></div>
-                    <div><span className="text-textsecond">Calories</span><p className="font-mono font-bold">{Math.round(s.totalCalories)}</p></div>
+                    <div>
+                      <span className="text-textsecond">Protein</span>
+                      <p className="font-mono font-bold text-brand-green">
+                        {s.plan && s.items.length === 0 ? 'Plan based' : `${s.totalProtein.toFixed(1)}g`}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-textsecond">Calories</span>
+                      <p className="font-mono font-bold">
+                        {s.plan && s.items.length === 0 ? 'Plan based' : Math.round(s.totalCalories)}
+                      </p>
+                    </div>
                     <div><span className="text-textsecond">Monthly</span><p className="font-mono font-bold text-brand-orange">{formatINR(s.totalPrice)}</p></div>
                   </div>
                   <p className="mt-2 text-xs text-textsecond">📍 {s.address}</p>
@@ -184,8 +197,8 @@ export default function AdminDashboard() {
                   {subs.slice(0, 12).map((s) => (
                     <tr key={s.id} className="border-t border-bordersoft">
                       <td className="py-2"><b>{s.userName}</b><br /><span className="text-xs text-textsecond">+91 {s.userMobile}</span></td>
-                      <td>📦 Custom Box</td>
-                      <td>{s.items.length}</td>
+                      <td>{s.plan ? `${s.plan.emoji || '📦'} ${s.plan.name}` : '🍱 Custom Box'}</td>
+                      <td>{s.plan && s.items.length === 0 ? 'Random' : s.items.length}</td>
                       <td className="font-mono font-semibold">{formatINR(s.totalPrice)}</td>
                       <td><span className={cn("rounded-full px-2 py-0.5 text-xs font-semibold", STATUS_TONE[s.status])}>{s.status}</span></td>
                       <td className="text-xs text-textsecond">{new Date(s.submittedAt).toLocaleDateString("en-IN")}</td>

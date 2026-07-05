@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { PlansSection } from "@/components/PlansSection";
 import { api } from "@/lib/api";
 
 const STATS = [
@@ -87,9 +88,14 @@ export default function LandingPage() {
               ))}
             </div>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link to="/subscription/build">
+              <a href="/#plans">
                 <Button size="lg" className="rounded-full bg-gradient-to-r from-brand-green to-emerald-600 px-7 text-white shadow-lg hover:opacity-95">
-                  Build My Protein Box <ArrowRight className="ml-1 h-4 w-4" />
+                  View Plans <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
+              </a>
+              <Link to="/subscription/build">
+                <Button variant="outline" size="lg" className="rounded-full px-7 shadow-sm">
+                  Build Custom Box
                 </Button>
               </Link>
             </div>
@@ -133,6 +139,9 @@ export default function LandingPage() {
           </Link>
         </div>
       </section>
+
+      {/* PLANS */}
+      <PlansSection />
 
       {/* HOW */}
       <section id="how" className="py-20">

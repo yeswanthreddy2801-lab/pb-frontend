@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Navbar } from "@/components/layout/Navbar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -37,13 +39,18 @@ export default function AdminDelivery() {
   });
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold font-display">Delivery Management 🚚</h1>
-      </div>
+    <div className="min-h-screen bg-surface">
+      <Navbar />
+      <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Link to="/admin"><Button variant="outline">← Back</Button></Link>
+            <h1 className="text-2xl sm:text-3xl font-bold font-display">Delivery Management 🚚</h1>
+          </div>
+        </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
+        <TabsList className="mb-6 flex-wrap h-auto">
           <TabsTrigger value="today">Today's Deliveries</TabsTrigger>
           <TabsTrigger value="staff">Delivery Staff</TabsTrigger>
           <TabsTrigger value="stats">Stats</TabsTrigger>
@@ -153,6 +160,7 @@ export default function AdminDelivery() {
           </div>
         </TabsContent>
       </Tabs>
+      </main>
     </div>
   );
 }

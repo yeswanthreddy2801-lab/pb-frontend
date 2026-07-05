@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, ChevronRight } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
@@ -19,11 +19,16 @@ const STEPS = ["Build box", "Delivery", "Review"];
 
 export default function SubscriptionBuilder() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const skipBuilder = searchParams.get("skipBuilder") === "true";
+  const planId = searchParams.get("planId");
+  const basePrice = parseInt(searchParams.get("basePrice") || "0");
+  
   const { user } = useAuth();
   const { selectedItems, clearAll } = useBuilderStore();
   const create = useSubscriptionStore((s) => s.create);
 
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(skipBuilder ? 1 : 0);
   const [address, setAddress] = useState(user?.address || "");
   const [position, setPosition] = useState<{lat: number, lng: number} | null>(null);
   const [startDate, setStartDate] = useState(() => {
@@ -41,7 +46,7 @@ export default function SubscriptionBuilder() {
   const totals = builderTotals(selectedItems);
 
   const next = () => {
-    if (step === 0 && selectedItems.length === 0) { toast.error("Add at least one item"); return; }
+    if (step === 0 && selectedItems.length === 0 && !skipBuilder) { toast.error("Add at least one item"); return; }
     if (step === 1 && (!address || address.length < 10)) { toast.error("Add a delivery address"); return; }
     setStep((s) => Math.min(STEPS.length - 1, s + 1));
   };
@@ -55,13 +60,14 @@ export default function SubscriptionBuilder() {
         userMobile: user.mobile,
         userName: user.name || "Customer",
         items: selectedItems,
-        totalPrice: totals.price * 30,
+        totalPrice: skipBuilder ? basePrice : totals.price * 30,
         totalProtein: totals.protein,
         totalCalories: totals.calories,
         address,
         position,
         notes,
         startDate,
+        planId,
       });
       setDone(crypto.randomUUID().slice(0, 8).toUpperCase());
       clearAll();
@@ -136,12 +142,12 @@ export default function SubscriptionBuilder() {
             <div className="rounded-3xl border border-bordersoft bg-white p-6">
               <h2 className="font-display text-xl font-bold">Review your order</h2>
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <dt className="text-textsecond">Items</dt><dd className="font-semibold">{selectedItems.length}</dd>
-                <dt className="text-textsecond">Daily protein</dt><dd className="font-mono font-bold text-brand-green">{totals.protein.toFixed(1)}g</dd>
-                <dt className="text-textsecond">Daily calories</dt><dd className="font-mono font-bold">{Math.round(totals.calories)}</dd>
+                <dt className="text-textsecond">Items</dt><dd className="font-semibold">{skipBuilder ? 'Random / Admin Assigned' : selectedItems.length}</dd>
+                <dt className="text-textsecond">Daily protein</dt><dd className="font-mono font-bold text-brand-green">{skipBuilder ? 'Based on Plan' : `${totals.protein.toFixed(1)}g`}</dd>
+                <dt className="text-textsecond">Daily calories</dt><dd className="font-mono font-bold">{skipBuilder ? 'Based on Plan' : Math.round(totals.calories)}</dd>
                 <dt className="text-textsecond">Start date</dt><dd className="font-semibold">{startDate}</dd>
                 <dt className="text-textsecond">Address</dt><dd className="font-semibold">{address}</dd>
-                <dt className="text-textsecond">Monthly total</dt><dd className="font-mono text-lg font-bold text-brand-orange">{formatINR(totals.price * 30)}</dd>
+                <dt className="text-textsecond">Monthly total</dt><dd className="font-mono text-lg font-bold text-brand-orange">{formatINR(skipBuilder ? basePrice : totals.price * 30)}</dd>
               </dl>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {selectedItems.map((i) => (

@@ -71,8 +71,8 @@ export default function UserDashboard() {
             <div className="text-5xl">🥗</div>
             <h2 className="mt-3 font-display text-2xl font-bold">Start your ProteinBox journey</h2>
             <p className="mt-1 text-textsecond">Build your first box in under 2 minutes.</p>
-            <Link to="/subscription/build">
-              <Button className="mt-5 bg-brand-green text-white hover:bg-emerald-600">Build my first box →</Button>
+            <Link to="/plans">
+              <Button className="mt-5 bg-brand-green text-white hover:bg-emerald-600">View Plans & Start →</Button>
             </Link>
           </motion.div>
         ) : (
@@ -83,7 +83,9 @@ export default function UserDashboard() {
                 <p className="text-sm font-semibold uppercase tracking-wider opacity-70">
                   {STATUS_META[current.status]?.emoji} {STATUS_META[current.status]?.label}
                 </p>
-                <h2 className="mt-1 font-display text-2xl font-bold">📦 Custom Protein Box</h2>
+                <h2 className="mt-1 font-display text-2xl font-bold">
+                  {current.plan ? `${current.plan.emoji || '📦'} ${current.plan.name}` : '🍱 Custom Protein Box'}
+                </h2>
                 <p className="mt-1 text-sm opacity-80">Starts {current.startDate} · Order #{current.id.slice(0, 8).toUpperCase()}</p>
               </div>
               <div className="text-right">
@@ -109,10 +111,10 @@ export default function UserDashboard() {
         {current && (
           <div className="grid gap-3 sm:grid-cols-4">
             {[
-              { label: "Daily protein", value: `${current.totalProtein.toFixed(1)}g`, color: "#16A34A" },
-              { label: "Daily calories", value: `${Math.round(current.totalCalories)}`, color: "#DC2626" },
+              { label: "Daily protein", value: current.plan && current.items.length === 0 ? 'Plan based' : `${current.totalProtein.toFixed(1)}g`, color: "#16A34A" },
+              { label: "Daily calories", value: current.plan && current.items.length === 0 ? 'Plan based' : `${Math.round(current.totalCalories)}`, color: "#DC2626" },
               { label: "Monthly cost", value: formatINR(current.totalPrice), color: "#EA580C" },
-              { label: "Items", value: `${current.items.length}/6`, color: "#2563EB" },
+              { label: "Items", value: current.plan && current.items.length === 0 ? 'Random' : `${current.items.length}/6`, color: "#2563EB" },
             ].map((s) => (
               <div key={s.label} className="rounded-2xl border border-bordersoft bg-white p-4">
                 <p className="text-xs font-semibold text-textsecond">{s.label}</p>
@@ -187,7 +189,7 @@ export default function UserDashboard() {
               {mySubs.map((s) => (
                 <li key={s.id} className="flex items-center justify-between rounded-xl border border-bordersoft p-3">
                   <div>
-                    <p className="font-semibold">📦 Custom Box</p>
+                    <p className="font-semibold">{s.plan ? `${s.plan.emoji || '📦'} ${s.plan.name}` : '🍱 Custom Box'}</p>
                     <p className="text-xs text-textsecond">Submitted {new Date(s.submittedAt).toLocaleString("en-IN")}</p>
                   </div>
                   <span className={cn("rounded-full border px-2.5 py-1 text-xs font-semibold", STATUS_META[s.status]?.tone)}>

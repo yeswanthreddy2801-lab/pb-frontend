@@ -99,14 +99,16 @@ export const useSubscriptionStore = create<SubStore>((set, get) => ({
 
       // 2. We no longer ask users to pick a plan, but the DB requires a plan_id.
       // We will fetch the first available plan and use its ID.
-      let planId = "";
-      try {
-        const planRes = await api.get("/food-items/plans");
-        if (planRes.success && planRes.data.length > 0) {
-          planId = planRes.data[0].id;
+      let planId = s.planId || "";
+      if (!planId) {
+        try {
+          const planRes = await api.get("/food-items/plans");
+          if (planRes.success && planRes.data.length > 0) {
+            planId = planRes.data[0].id;
+          }
+        } catch (e) {
+          console.warn("Failed to fetch default plan", e);
         }
-      } catch (e) {
-        console.warn("Failed to fetch default plan", e);
       }
 
       const payload = {

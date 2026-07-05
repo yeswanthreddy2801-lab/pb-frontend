@@ -31,9 +31,25 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   
   addItem: async (itemData) => {
     try {
-      const res = await api.post("/admin/inventory", itemData);
-      if (res.success && res.data) {
-        set({ items: [res.data, ...get().items] });
+      const payload: any = { ...itemData };
+      if (itemData.planType !== undefined) payload.plan_type = itemData.planType;
+      if (itemData.protein !== undefined) payload.protein_g = itemData.protein;
+      if (itemData.isActive !== undefined) payload.is_active = itemData.isActive;
+      if (itemData.isAvailable !== undefined) payload.is_available = itemData.isAvailable;
+      if ((itemData as any).imageUrl !== undefined) payload.image_url = (itemData as any).imageUrl;
+      if ((itemData as any).sortOrder !== undefined) payload.sort_order = (itemData as any).sortOrder;
+      
+      delete payload.planType;
+      delete payload.protein;
+      delete payload.isActive;
+      delete payload.isAvailable;
+      delete payload.imageUrl;
+      delete payload.sortOrder;
+      delete payload.id;
+
+      const res = await api.post("/admin/inventory", payload);
+      if (res.success) {
+        await get().fetchItems();
       }
     } catch (error) {
       console.error("Failed to add item", error);
@@ -43,12 +59,25 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   
   updateItem: async (id, itemData) => {
     try {
-      const res = await api.patch(`/admin/inventory/${id}`, itemData);
-      if (res.success && res.data) {
-        const list = get().items.map(item => 
-          item.id === id ? { ...item, ...res.data } : item
-        );
-        set({ items: list });
+      const payload: any = { ...itemData };
+      if (itemData.planType !== undefined) payload.plan_type = itemData.planType;
+      if (itemData.protein !== undefined) payload.protein_g = itemData.protein;
+      if (itemData.isActive !== undefined) payload.is_active = itemData.isActive;
+      if (itemData.isAvailable !== undefined) payload.is_available = itemData.isAvailable;
+      if ((itemData as any).imageUrl !== undefined) payload.image_url = (itemData as any).imageUrl;
+      if ((itemData as any).sortOrder !== undefined) payload.sort_order = (itemData as any).sortOrder;
+      
+      delete payload.planType;
+      delete payload.protein;
+      delete payload.isActive;
+      delete payload.isAvailable;
+      delete payload.imageUrl;
+      delete payload.sortOrder;
+      delete payload.id;
+
+      const res = await api.patch(`/admin/inventory/${id}`, payload);
+      if (res.success) {
+        await get().fetchItems();
       }
     } catch (error) {
       console.error("Failed to update item", error);
@@ -59,8 +88,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   deleteItem: async (id) => {
     try {
       await api.delete(`/admin/inventory/${id}`);
-      const list = get().items.filter(item => item.id !== id);
-      set({ items: list });
+      await get().fetchItems();
     } catch (error) {
       console.error("Failed to delete item", error);
       throw error;
