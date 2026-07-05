@@ -42,6 +42,7 @@ function isPointInPolygon(latlng: L.LatLng, polygon: [number, number][]) {
 interface MapPickerProps {
   address: string;
   onChangeAddress: (address: string) => void;
+  onChangePosition?: (pos: {lat: number, lng: number} | null) => void;
 }
 
 // Global reference for manual location fetching
@@ -211,8 +212,14 @@ function MapCenterUpdater({ position }: { position: L.LatLng | null }) {
   return null;
 }
 
-export function MapPicker({ address, onChangeAddress }: MapPickerProps) {
+export function MapPicker({ address, onChangeAddress, onChangePosition }: MapPickerProps) {
   const [position, setPosition] = useState<L.LatLng | null>(null);
+
+  useEffect(() => {
+    if (onChangePosition && position) {
+      onChangePosition({ lat: position.lat, lng: position.lng });
+    }
+  }, [position, onChangePosition]);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);

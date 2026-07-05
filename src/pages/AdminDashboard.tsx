@@ -17,7 +17,10 @@ const STATUS_TONE: Record<string, string> = {
   expired: "bg-slate-100 text-slate-700",
 };
 
+import { useQueryClient } from "@tanstack/react-query";
+
 export default function AdminDashboard() {
+  const queryClient = useQueryClient();
   const { subscriptions: subs, fetchSubscriptions, approve, reject } = useSubscriptionStore();
   const { changeAdminPassword } = useAuth();
   
@@ -64,6 +67,7 @@ export default function AdminDashboard() {
           <h1 className="font-display text-3xl font-bold">Admin dashboard 🛡️</h1>
           <div className="flex items-center gap-3">
             <Button variant="outline" onClick={() => setShowPasswordModal(true)} className="border-slate-300 text-slate-700 hover:bg-slate-100">🔐 Change Password</Button>
+            <Link to="/admin/delivery"><Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">🚚 Deliveries</Button></Link>
             <Link to="/admin/inventory"><Button variant="outline" className="border-brand-green text-brand-green hover:bg-brand-green/10">📦 Manage Inventory</Button></Link>
             <Link to="/admin/orders"><Button variant="outline">View all orders →</Button></Link>
           </div>
@@ -148,7 +152,13 @@ export default function AdminDashboard() {
                     </div>
                   )}
                   <div className="mt-4 flex gap-2">
-                    <Button onClick={() => { approve(s.id); toast.success("Approved — customer notified"); }}
+                    <Button onClick={() => { 
+                      approve(s.id).then(() => {
+                        queryClient.invalidateQueries({ queryKey: ["adminTodayDeliveries"] });
+                        queryClient.invalidateQueries({ queryKey: ["adminDeliveryStats"] });
+                      });
+                      toast.success("Approved — customer notified"); 
+                    }}
                       className="flex-1 bg-brand-green text-white hover:bg-emerald-600">Approve</Button>
                     <Button onClick={() => { reject(s.id); toast.info("Order rejected"); }}
                       variant="outline" className="flex-1 border-rose-300 text-rose-600 hover:bg-rose-50">Reject</Button>

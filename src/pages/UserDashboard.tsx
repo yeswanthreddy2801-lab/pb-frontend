@@ -1,7 +1,9 @@
 import { useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/layout/Navbar";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscriptionStore } from "@/store/subscriptionStore";
@@ -38,10 +40,18 @@ export default function UserDashboard() {
     // Poll for updates every 10 seconds so status changes reflect automatically
     const intervalId = setInterval(() => {
       fetchSubscriptions();
-    }, 10000);
+    }, 30000);
     
     return () => clearInterval(intervalId);
   }, [fetchSubscriptions]);
+
+  const { data: todayDeliveryResponse } = useQuery({
+    queryKey: ['myTodayDelivery'],
+    queryFn: () => api.get('/delivery/my-today'),
+    refetchInterval: 30000,
+  });
+
+  const todayDelivery = todayDeliveryResponse?.data;
 
   return (
     <div className="min-h-screen bg-surface">
@@ -110,6 +120,63 @@ export default function UserDashboard() {
               </div>
             ))}
           </div>
+        )}
+
+        {/* today's delivery tracking */}
+        {todayDelivery && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            className="rounded-3xl border border-bordersoft bg-white p-6 shadow-sm">
+            <h3 className="font-display text-xl font-bold mb-4">Today's Delivery 🚚</h3>
+            
+            <div className="relative flex justify-between items-center mb-8 mt-4 px-4">
+              <div className="absolute top-1/2 left-8 right-8 h-1 bg-gray-200 -z-10 -translate-y-1/2"></div>
+              
+              <div className="flex flex-col items-center gap-2">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white
+                  ${['pending', 'out_for_delivery', 'delivered'].includes(todayDelivery.delivery_status) ? 'bg-brand-green' : 'bg-gray-300'}`}>
+                  1
+                </div>
+                <span className="text-xs font-semibold">Prepared</span>
+              </div>
+
+              <div className="flex flex-col items-center gap-2">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white
+                  ${['out_for_delivery', 'delivered'].includes(todayDelivery.delivery_status) ? 'bg-brand-green' : 'bg-gray-300'}`}>
+                  2
+                </div>
+                <span className="text-xs font-semibold">Out for Delivery</span>
+              </div>
+
+              <div className="flex flex-col items-center gap-2">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white
+                  ${todayDelivery.delivery_status === 'delivered' ? 'bg-brand-green' : 'bg-gray-300'}`}>
+                  3
+                </div>
+                <span className="text-xs font-semibold">Delivered</span>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+              <div>
+                <p className="font-semibold text-gray-900">
+                  {todayDelivery.delivery_status === 'pending' && "Your box is ready and waiting for delivery."}
+                  {todayDelivery.delivery_status === 'out_for_delivery' && "Your box is out for delivery! Arriving soon."}
+                  {todayDelivery.delivery_status === 'delivered' && `Delivered at ${new Date(todayDelivery.delivered_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}. Enjoy your meal!`}
+                  {todayDelivery.delivery_status === 'failed' && "Delivery attempt failed."}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">Expected: {todayDelivery.time_slot === 'morning_6_8' ? '6 AM - 8 AM' : '8 AM - 10 AM'}</p>
+              </div>
+              {todayDelivery.delivery_staff && (
+                <div className="flex items-center gap-3 bg-white p-2 rounded-lg border shadow-sm">
+                  <div className="bg-brand-green/10 p-2 rounded-full">🚚</div>
+                  <div>
+                    <p className="text-sm font-semibold">{todayDelivery.delivery_staff.name}</p>
+                    <a href={`tel:${todayDelivery.delivery_staff.mobile}`} className="text-xs text-brand-green font-semibold">Call Partner</a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
         )}
 
         {/* history */}

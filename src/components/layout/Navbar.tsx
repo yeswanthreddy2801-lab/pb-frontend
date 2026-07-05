@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
-  { to: "/", label: "Home" },
-  { to: "/#plans", label: "Plans" },
-  { to: "/#how", label: "How It Works" },
-  { to: "/#benefits", label: "Benefits" },
-  { to: "/#contact", label: "Contact" },
+  { to: "/?view=home", label: "Home" },
+  { to: "/?view=home#plans", label: "Plans" },
+  { to: "/?view=home#how", label: "How It Works" },
+  { to: "/?view=home#benefits", label: "Benefits" },
+  { to: "/?view=home#contact", label: "Contact" },
 ];
 
 export function Navbar() {
@@ -21,7 +21,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-bordersoft bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold text-textprimary">
+        <Link to={isAuthenticated ? (isAdmin ? "/admin" : "/dashboard") : "/?view=home"} className="flex items-center gap-2 font-display text-xl font-bold text-textprimary">
           <span className="text-2xl">🥗</span> ProteinBox
         </Link>
         <nav className="hidden items-center gap-7 md:flex">
@@ -41,6 +41,7 @@ export function Navbar() {
             </>
           ) : (
             <>
+              <Button variant="ghost" className="text-xs" onClick={() => navigate("/delivery/login")}>Delivery Login</Button>
               <Button variant="ghost" onClick={() => navigate("/login")}>Login</Button>
               <Button className="rounded-full bg-brand-green text-white hover:bg-emerald-600" onClick={() => navigate("/login")}>
                 Get Started
@@ -60,9 +61,14 @@ export function Navbar() {
             </a>
           ))}
           {!isAuthenticated ? (
-            <Button className="mt-2 w-full bg-brand-green text-white" onClick={() => { setOpen(false); navigate("/login"); }}>
-              Login / Sign up
-            </Button>
+            <div className="flex gap-2">
+              <Button className="mt-2 w-full bg-brand-green text-white" onClick={() => { setOpen(false); navigate("/login"); }}>
+                Login / Sign up
+              </Button>
+              <Button className="mt-2 w-full bg-blue-600 text-white" onClick={() => { setOpen(false); navigate("/delivery/login"); }}>
+                Delivery Login
+              </Button>
+            </div>
           ) : (
             <Button className="mt-2 w-full bg-brand-green text-white" onClick={() => { setOpen(false); navigate(isAdmin ? "/admin" : "/dashboard"); }}>
               {isAdmin ? "Admin dashboard" : "My dashboard"}

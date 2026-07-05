@@ -25,6 +25,7 @@ export default function SubscriptionBuilder() {
 
   const [step, setStep] = useState(0);
   const [address, setAddress] = useState(user?.address || "");
+  const [position, setPosition] = useState<{lat: number, lng: number} | null>(null);
   const [startDate, setStartDate] = useState(() => {
     const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10);
   });
@@ -58,6 +59,7 @@ export default function SubscriptionBuilder() {
         totalProtein: totals.protein,
         totalCalories: totals.calories,
         address,
+        position,
         notes,
         startDate,
       });
@@ -116,7 +118,7 @@ export default function SubscriptionBuilder() {
             <h2 className="font-display text-xl font-bold">Delivery details</h2>
             <div>
               <label className="text-sm font-semibold">Delivery address *</label>
-              <MapPicker address={address} onChangeAddress={setAddress} />
+              <MapPicker address={address} onChangeAddress={setAddress} onChangePosition={setPosition} />
             </div>
             <div>
               <label className="text-sm font-semibold">Preferred start date *</label>
