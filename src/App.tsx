@@ -76,6 +76,7 @@ export function App() {
         <Route path="/admin/plans" element={<Protected admin><AdminPlans /></Protected>} />
         <Route path="/admin/delivery" element={<Protected admin><AdminDelivery /></Protected>} />
 
+        <Route path="/delivery" element={<Navigate to="/delivery/dashboard" replace />} />
         <Route path="/delivery/login" element={<DeliveryLoginPage />} />
         <Route path="/delivery/dashboard" element={<DeliveryRoute><DeliveryDashboard /></DeliveryRoute>} />
         <Route path="/delivery/pending" element={<DeliveryRoute><PendingDeliveries /></DeliveryRoute>} />
