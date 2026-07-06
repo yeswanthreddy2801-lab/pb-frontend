@@ -7,6 +7,7 @@ import LandingPage from "@/pages/LandingPage";
 import LoginPage from "@/pages/LoginPage";
 import UserDashboard from "@/pages/UserDashboard";
 import SubscriptionBuilder from "@/pages/SubscriptionBuilder";
+import PlansPage from "@/pages/PlansPage";
 import AdminLoginPage from "@/pages/AdminLoginPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminInventory from "@/pages/AdminInventory";
@@ -66,6 +67,7 @@ export function App() {
         <Route path="/" element={<RootRoute />} />
         <Route path="/login" element={isAuthenticated ? <Navigate to={isAdmin ? "/admin" : "/dashboard"} replace /> : <LoginPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/plans" element={<PlansPage />} />
 
         <Route path="/dashboard" element={<Protected><UserDashboard /></Protected>} />
         <Route path="/subscription/build" element={<Protected><SubscriptionBuilder /></Protected>} />

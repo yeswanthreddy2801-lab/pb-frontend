@@ -88,11 +88,11 @@ export default function LandingPage() {
               ))}
             </div>
             <div className="mt-7 flex flex-wrap gap-3">
-              <a href="/#plans">
+              <Link to="/plans">
                 <Button size="lg" className="rounded-full bg-gradient-to-r from-brand-green to-emerald-600 px-7 text-white shadow-lg hover:opacity-95">
                   View Plans <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
-              </a>
+              </Link>
               <Link to="/subscription/build">
                 <Button variant="outline" size="lg" className="rounded-full px-7 shadow-sm">
                   Build Custom Box
