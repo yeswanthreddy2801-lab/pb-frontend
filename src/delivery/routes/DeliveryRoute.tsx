@@ -15,7 +15,7 @@ export const DeliveryRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/delivery/login" state={{ from: location.pathname }} replace />;
+    return <Navigate to="/delivery/login" state={{ from: location.pathname + location.search }} replace />;
   }
 
   return <>{children}</>;

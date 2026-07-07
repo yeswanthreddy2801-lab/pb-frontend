@@ -23,9 +23,19 @@ import DeliveryDetailsPage from "@/delivery/pages/DeliveryDetailsPage";
 function Protected({ children, admin = false }: { children: ReactNode; admin?: boolean }) {
   const { isAuthenticated, isAdmin } = useAuth();
   const loc = useLocation();
-  if (!isAuthenticated) return <Navigate to={admin ? "/admin/login" : "/login"} replace state={{ from: loc.pathname }} />;
+  if (!isAuthenticated) return <Navigate to={admin ? "/admin/login" : "/login"} replace state={{ from: loc.pathname + loc.search }} />;
   if (admin && !isAdmin) return <Navigate to="/dashboard" replace />;
   if (!admin && isAdmin) return <Navigate to="/admin" replace />;
+  return <>{children}</>;
+}
+
+function PublicOnly({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isAdmin } = useAuth();
+  const loc = useLocation();
+  if (isAuthenticated) {
+    const from = (loc.state as any)?.from || (isAdmin ? "/admin" : "/dashboard");
+    return <Navigate to={from} replace />;
+  }
   return <>{children}</>;
 }
 
@@ -65,7 +75,7 @@ export function App() {
     <>
       <Routes>
         <Route path="/" element={<RootRoute />} />
-        <Route path="/login" element={isAuthenticated ? <Navigate to={isAdmin ? "/admin" : "/dashboard"} replace /> : <LoginPage />} />
+        <Route path="/login" element={<PublicOnly><LoginPage /></PublicOnly>} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/plans" element={<PlansPage />} />
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -20,6 +20,7 @@ export default function DeliveryLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useDeliveryAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
@@ -30,7 +31,8 @@ export default function DeliveryLoginPage() {
     setIsLoading(true);
     try {
       await login(data.mobile, data.password);
-      navigate('/delivery/dashboard', { replace: true });
+      const from = (location.state as any)?.from || '/delivery/dashboard';
+      navigate(from, { replace: true });
     } catch (error) {
       // Error is handled in context via toast
     } finally {
