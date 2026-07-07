@@ -11,7 +11,7 @@ import { api } from "@/lib/api";
 const STATS = [
   { v: "25+", l: "Items" },
   { v: "30g+", l: "Daily Protein" },
-  { v: "₹299", l: "/month" },
+  { v: "₹1500", l: "/month" },
   { v: "⭐ 4.9", l: "Rating" },
 ];
 
@@ -105,7 +105,7 @@ export default function LandingPage() {
                   <div key={i} className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-brand-green text-xs font-bold text-white">{c}</div>
                 ))}
               </div>
-              <p className="text-sm text-textsecond"><b className="text-textprimary">500+</b> happy subscribers this month</p>
+              <p className="text-sm text-textsecond"><b className="text-textprimary">35+</b> happy subscribers this month</p>
             </div>
           </div>
 
