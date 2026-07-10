@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,18 @@ import { toast } from "sonner";
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { loginAdmin } = useAuth();
-  const [mobile, setMobile] = useState("");
+  const [mobile, setMobile] = useState(location.state?.mobile || "");
   const [password, setPassword] = useState("");
-  const [needsPwd, setNeedsPwd] = useState(false);
+  const [needsPwd, setNeedsPwd] = useState(!!location.state?.mobile);
+
+  useEffect(() => {
+    if (location.state?.mobile) {
+      setMobile(location.state.mobile);
+      setNeedsPwd(true);
+    }
+  }, [location.state]);
 
   const onContinue = (e: React.FormEvent) => {
     e.preventDefault();

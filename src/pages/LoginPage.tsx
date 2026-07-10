@@ -13,37 +13,40 @@ export default function LoginPage() {
   const [step, setStep] = useState<1 | 2>(1);
   const [mobile, setMobile] = useState("");
   const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [userStatus, setUserStatus] = useState<{ isAdmin?: boolean; exists: boolean; hasPassword: boolean } | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const validMobile = /^[6-9]\d{9}$/.test(mobile);
   const validName = name.trim().length > 0;
+  const validPassword = password.length >= 6;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validMobile) { setErr("Enter a valid 10-digit Indian mobile"); return; }
     
     setLoading(true);
     setErr(null);
 
     try {
       if (step === 1) {
+        if (!validMobile) { setErr("Enter a valid 10-digit Indian mobile"); setLoading(false); return; }
         // Step 1: Check if user exists
-        const exists = await checkUser(mobile);
-        if (exists) {
-          // Existing user -> login directly
-          await loginUser(mobile);
-          toast.success("Welcome back 🥗");
-          navigate((location.state as { from?: string })?.from || "/dashboard");
-        } else {
-          // New user -> ask for name
-          setStep(2);
+        const status = await checkUser(mobile);
+        if (status.isAdmin) {
+          toast("Admin detected. Redirecting...", { icon: '🛡️' });
+          navigate("/admin/login", { state: { mobile } });
+          return;
         }
+        setUserStatus(status);
+        setStep(2);
       } else {
-        // Step 2: New user enters name
-        if (!validName) { setErr("Enter your name"); setLoading(false); return; }
-        await loginUser(mobile, name);
-        toast.success("Account created! 🥗");
+        // Step 2: Login or Create Account or Set Password
+        if (!validPassword) { setErr("Password must be at least 6 characters"); setLoading(false); return; }
+        if (!userStatus?.exists && !validName) { setErr("Enter your name"); setLoading(false); return; }
+        
+        await loginUser(mobile, userStatus?.exists ? undefined : name, password);
+        toast.success(userStatus?.exists ? "Welcome back 🥗" : "Account created! 🥗");
         navigate((location.state as { from?: string })?.from || "/dashboard");
       }
     } catch (err: any) {
@@ -51,6 +54,18 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getStep2Title = () => {
+    if (!userStatus?.exists) return "Create Account";
+    if (!userStatus?.hasPassword) return "Set Password";
+    return "Welcome Back 👋";
+  };
+
+  const getStep2Subtitle = () => {
+    if (!userStatus?.exists) return "Let's get you set up";
+    if (!userStatus?.hasPassword) return "Please set a password for your account";
+    return "Enter your password to continue";
   };
 
   return (
@@ -63,10 +78,10 @@ export default function LoginPage() {
           <span className="text-3xl">🥗</span> ProteinBox
         </Link>
         <h1 className="mt-6 text-center font-display text-2xl font-bold">
-          {step === 1 ? "Welcome 👋" : "Create Account"}
+          {step === 1 ? "Welcome 👋" : getStep2Title()}
         </h1>
         <p className="mt-1 text-center text-sm text-textsecond">
-          {step === 1 ? "Enter your mobile number to continue" : "What should we call you?"}
+          {step === 1 ? "Enter your mobile number to continue" : getStep2Subtitle()}
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
@@ -82,6 +97,7 @@ export default function LoginPage() {
                   className="border-0 focus-visible:ring-0"
                   inputMode="numeric"
                   disabled={loading}
+                  autoFocus
                 />
               </div>
               {err && <p className="mt-1 text-xs font-semibold text-rose-500">{err}</p>}
@@ -89,34 +105,62 @@ export default function LoginPage() {
           )}
 
           {step === 2 && (
-            <div>
-              <label className="text-sm font-semibold text-textprimary">Name</label>
-              <div className="mt-1 flex overflow-hidden rounded-xl border border-bordersoft focus-within:border-brand-green focus-within:ring-2 focus-within:ring-brand-green/30">
-                <Input
-                  value={name}
-                  onChange={(e) => { setName(e.target.value); setErr(null); }}
-                  placeholder="John Doe"
-                  className="border-0 focus-visible:ring-0"
-                  autoFocus
-                  disabled={loading}
-                />
+            <>
+              {!userStatus?.exists && (
+                <div>
+                  <label className="text-sm font-semibold text-textprimary">Name</label>
+                  <div className="mt-1 flex overflow-hidden rounded-xl border border-bordersoft focus-within:border-brand-green focus-within:ring-2 focus-within:ring-brand-green/30">
+                    <Input
+                      value={name}
+                      onChange={(e) => { setName(e.target.value); setErr(null); }}
+                      placeholder="John Doe"
+                      className="border-0 focus-visible:ring-0"
+                      autoFocus
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+              )}
+              
+              <div>
+                <label className="text-sm font-semibold text-textprimary">Password</label>
+                <div className="mt-1 flex overflow-hidden rounded-xl border border-bordersoft focus-within:border-brand-green focus-within:ring-2 focus-within:ring-brand-green/30">
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); setErr(null); }}
+                    placeholder="Enter 6+ characters"
+                    className="border-0 focus-visible:ring-0"
+                    autoFocus={userStatus?.exists}
+                    disabled={loading}
+                  />
+                </div>
+                {err && <p className="mt-1 text-xs font-semibold text-rose-500">{err}</p>}
               </div>
-              {err && <p className="mt-1 text-xs font-semibold text-rose-500">{err}</p>}
-            </div>
+            </>
           )}
 
           <Button 
             type="submit" 
-            disabled={loading || (step === 1 ? !validMobile : !validName)} 
+            disabled={loading || (step === 1 ? !validMobile : (!validPassword || (!userStatus?.exists && !validName)))} 
             className="w-full bg-brand-green text-white hover:bg-emerald-600"
           >
             {loading ? "Please wait..." : "Continue"}
           </Button>
+          
+          {step === 2 && (
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={() => { setStep(1); setErr(null); setPassword(""); }}
+              className="w-full text-textsecond"
+              disabled={loading}
+            >
+              Back
+            </Button>
+          )}
         </form>
 
-        <div className="mt-5 space-y-1 text-center text-xs text-textsecond">
-          <p>Admin? <Link to="/admin/login" className="font-semibold text-brand-green">Sign in here</Link></p>
-        </div>
       </motion.div>
     </div>
   );

@@ -9,8 +9,8 @@ interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  loginUser: (mobile: string, name?: string) => Promise<User>;
-  checkUser: (mobile: string) => Promise<boolean>;
+  loginUser: (mobile: string, name?: string, password?: string) => Promise<User>;
+  checkUser: (mobile: string) => Promise<{ isAdmin?: boolean; exists: boolean; hasPassword: boolean }>;
   registerUser: (data: Omit<User, "id" | "createdAt" | "isAdmin">) => Promise<User>;
   loginAdmin: (mobile: string, password: string) => Promise<boolean>;
   updateProfile: (data: Partial<User>) => Promise<void>;
@@ -58,13 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const checkUser = async (mobile: string): Promise<boolean> => {
+  const checkUser = async (mobile: string): Promise<{ isAdmin?: boolean; exists: boolean; hasPassword: boolean }> => {
     const res = await api.post("/auth/check-user", { mobile });
-    return res.success && res.data?.exists;
+    return res.success && res.data ? res.data : { exists: false, hasPassword: false };
   };
 
-  const loginUser = async (mobile: string, name?: string): Promise<User> => {
-    const res = await api.post("/auth/login", { mobile, name });
+  const loginUser = async (mobile: string, name?: string, password?: string): Promise<User> => {
+    const res = await api.post("/auth/login", { mobile, name, password });
     if (res.success && res.data) {
       localStorage.setItem(STORAGE_TOKEN_KEY, res.data.token);
       persistUser(res.data.user);
