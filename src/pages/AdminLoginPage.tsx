@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function AdminLoginPage() {
   const { loginAdmin } = useAuth();
   const [mobile, setMobile] = useState(location.state?.mobile || "");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [needsPwd, setNeedsPwd] = useState(!!location.state?.mobile);
 
   useEffect(() => {
@@ -65,7 +67,16 @@ export default function AdminLoginPage() {
           <form onSubmit={onLogin} className="mt-6 space-y-4">
             <div>
               <label className="text-sm font-semibold">Password</label>
-              <Input className="mt-1" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoFocus />
+              <div className="relative mt-1">
+                <Input className="pr-10" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoFocus />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-textsecond hover:text-textprimary"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
             <Button type="submit" className="w-full bg-brand-green text-white hover:bg-emerald-600">Sign in</Button>
             <button type="button" className="w-full text-xs text-textsecond hover:underline" onClick={() => setNeedsPwd(false)}>← Use a different number</button>
