@@ -21,12 +21,30 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-bordersoft bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link to={isAuthenticated ? (isAdmin ? "/admin" : "/dashboard") : "/?view=home"} className="flex items-center gap-2 font-display text-xl font-bold text-textprimary">
+        <Link 
+          to={isAuthenticated ? (isAdmin ? "/admin" : "/dashboard") : "/?view=home"} 
+          onClick={() => {
+            const path = window.location.pathname;
+            if (path === "/" || path === "/admin" || path === "/dashboard") {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+          }}
+          className="flex items-center gap-2 font-display text-xl font-bold text-textprimary"
+        >
           <span className="text-2xl">🥗</span> ProteinBox
         </Link>
         <nav className="hidden items-center gap-7 md:flex">
           {LINKS.map((l) => (
-            <Link key={l.to} to={l.to} className="text-sm font-medium text-textsecond hover:text-brand-green">
+            <Link 
+              key={l.to} 
+              to={l.to} 
+              onClick={() => {
+                if (l.label === "Home" && window.location.pathname === "/") {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
+              className="text-sm font-medium text-textsecond hover:text-brand-green"
+            >
               {l.label}
             </Link>
           ))}
@@ -56,7 +74,17 @@ export function Navbar() {
       <div className={cn("border-t border-bordersoft bg-white md:hidden", open ? "block" : "hidden")}>
         <div className="space-y-1 px-4 py-3">
           {LINKS.map((l) => (
-            <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className="block py-2 text-sm font-medium text-textsecond">
+            <Link 
+              key={l.to} 
+              to={l.to} 
+              onClick={() => {
+                setOpen(false);
+                if (l.label === "Home" && window.location.pathname === "/") {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }} 
+              className="block py-2 text-sm font-medium text-textsecond"
+            >
               {l.label}
             </Link>
           ))}
