@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { formatINR } from "@/lib/format";
@@ -7,37 +7,28 @@ import type { SubscriptionPlan } from "@/types/food.types";
 
 export function PlansSection() {
   const navigate = useNavigate();
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchPlans() {
-      try {
-        const res = await api.get("/food-items/plans");
-        if (res.success && res.data) {
-          const activePlans = res.data
-            .map((b: any) => ({
-              id: b.id,
-              name: b.name,
-              slug: b.slug,
-              description: b.description,
-              category: b.category,
-              basePrice: b.basePrice,
-              maxItems: b.maxItems,
-              color: b.color,
-              emoji: b.emoji || "📦",
-              isActive: b.isActive,
-            }));
-          setPlans(activePlans);
-        }
-      } catch (e) {
-        console.error("Failed to fetch plans", e);
-      } finally {
-        setLoading(false);
+  const { data: plans = [] as SubscriptionPlan[], isLoading: loading } = useQuery({
+    queryKey: ['subscription-plans'],
+    queryFn: async () => {
+      const res = await api.get("/food-items/plans");
+      if (res.success && res.data) {
+        return res.data.map((b: any) => ({
+          id: b.id,
+          name: b.name,
+          slug: b.slug,
+          description: b.description,
+          category: b.category,
+          basePrice: b.basePrice,
+          maxItems: b.maxItems,
+          color: b.color,
+          emoji: b.emoji || "📦",
+          isActive: b.isActive,
+        }));
       }
+      return [];
     }
-    fetchPlans();
-  }, []);
+  });
 
   return (
     <section id="plans" className="py-20 bg-surface">
@@ -55,7 +46,7 @@ export function PlansSection() {
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {plans.map((plan) => (
+            {plans.map((plan: SubscriptionPlan) => (
               <div
                 key={plan.id}
                 className="flex flex-col justify-between rounded-3xl border border-bordersoft bg-white p-8 shadow-sm transition-all hover:shadow-md hover:-translate-y-1"
