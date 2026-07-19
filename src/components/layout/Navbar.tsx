@@ -26,9 +26,9 @@ export function Navbar() {
         </Link>
         <nav className="hidden items-center gap-7 md:flex">
           {LINKS.map((l) => (
-            <a key={l.to} href={l.to} className="text-sm font-medium text-textsecond hover:text-brand-green">
+            <Link key={l.to} to={l.to} className="text-sm font-medium text-textsecond hover:text-brand-green">
               {l.label}
-            </a>
+            </Link>
           ))}
         </nav>
         <div className="hidden items-center gap-2 md:flex">
@@ -56,9 +56,9 @@ export function Navbar() {
       <div className={cn("border-t border-bordersoft bg-white md:hidden", open ? "block" : "hidden")}>
         <div className="space-y-1 px-4 py-3">
           {LINKS.map((l) => (
-            <a key={l.to} href={l.to} onClick={() => setOpen(false)} className="block py-2 text-sm font-medium text-textsecond">
+            <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className="block py-2 text-sm font-medium text-textsecond">
               {l.label}
-            </a>
+            </Link>
           ))}
           {!isAuthenticated ? (
             <div className="flex gap-2">
