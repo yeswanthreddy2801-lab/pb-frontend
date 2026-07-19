@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { User } from "@/types/user.types";
 import { api } from "@/lib/api";
 
+import { GlobalLoader } from "@/components/ui/GlobalLoader";
+
 const STORAGE_TOKEN_KEY = "proteinbox_token";
 const STORAGE_USER_KEY = "proteinbox_user";
 
@@ -26,23 +28,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem(STORAGE_TOKEN_KEY);
-      if (token) {
-        try {
-          // Load cached user immediately to avoid flicker
-          const cached = localStorage.getItem(STORAGE_USER_KEY);
-          if (cached) setUser(JSON.parse(cached));
-          
-          // Verify with backend
-          const res = await api.get("/auth/me");
-          if (res.success && res.data) {
-            persistUser(res.data);
+      // Artificial minimum delay to show the splash screen animation
+      const minimumDelay = new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const checkAuth = async () => {
+        const token = localStorage.getItem(STORAGE_TOKEN_KEY);
+        if (token) {
+          try {
+            // Load cached user immediately to avoid flicker
+            const cached = localStorage.getItem(STORAGE_USER_KEY);
+            if (cached) setUser(JSON.parse(cached));
+            
+            // Verify with backend
+            const res = await api.get("/auth/me");
+            if (res.success && res.data) {
+              persistUser(res.data);
+            }
+          } catch (error) {
+            console.error("Auth verification failed", error);
+            logout();
           }
-        } catch (error) {
-          console.error("Auth verification failed", error);
-          logout();
         }
-      }
+      };
+
+      await Promise.all([checkAuth(), minimumDelay]);
       setLoading(false);
     };
     initAuth();
@@ -133,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
       }}
     >
-      {!loading && children}
+      {loading ? <GlobalLoader /> : children}
     </AuthContext.Provider>
   );
 }
